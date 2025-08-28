@@ -1,277 +1,507 @@
 import React, { useState } from 'react';
+import {
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
+  Container,
+  Box,
+  Button,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Chip,
+  TextField,
+  FormControlLabel,
+  Switch,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  IconButton,
+  Avatar,
+  AppBar,
+  Toolbar,
+  FormHelperText
+} from '@mui/material';
+import {
+  Person as PersonIcon,
+  ArrowBack as ArrowBackIcon,
+  Check as CheckIcon
+} from '@mui/icons-material';
 
+// Theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#4CAF50',
+    },
+    background: {
+      default: '#f5f5f5',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+  },
+  shape: {
+    borderRadius: 12,
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          borderRadius: 8,
+          padding: '10px 24px',
+          fontWeight: 500,
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 8,
+          },
+        },
+      },
+    },
+  },
+});
+
+// Types
 interface Employee {
+  id: number;
   name: string;
   email: string;
   department: string;
   active: boolean;
 }
 
+// Departments
+const departments = [
+  'Design',
+  'TI',
+  'Marketing',
+  'Produto',
+  'Vendas',
+  'RH',
+  'Financeiro',
+  'Operações'
+];
+
 function App() {
   const [currentView, setCurrentView] = useState<'list' | 'form'>('list');
-  const [currentStep, setCurrentStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(0);
   const [employees, setEmployees] = useState<Employee[]>([
-    { name: 'João Silva', email: 'joao@example.com', department: 'TI', active: true },
-    { name: 'Maria Santos', email: 'maria@example.com', department: 'RH', active: true }
+    { id: 1, name: 'Fernanda Torres', email: 'fernandatorres@flugo.com', department: 'Design', active: true },
+    { id: 2, name: 'Joana D\'Arc', email: 'joanadarc@flugo.com', department: 'TI', active: true },
+    { id: 3, name: 'Mari Froes', email: 'marifroes@flugo.com', department: 'Marketing', active: true },
+    { id: 4, name: 'Clara Costa', email: 'claracosta@flugo.com', department: 'Produto', active: false },
   ]);
-  const [formData, setFormData] = useState<Employee>({
+  const [formData, setFormData] = useState<Omit<Employee, 'id'>>({
     name: '',
     email: '',
     department: '',
-    active: true
+    active: true,
   });
+  const [errors, setErrors] = useState<any>({});
+
+  const validateStep = (step: number): boolean => {
+    const newErrors: any = {};
+
+    if (step === 0) {
+      if (!formData.name || formData.name.trim().length < 3) {
+        newErrors.name = 'Nome deve ter pelo menos 3 caracteres';
+      }
+      if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = 'Email inválido';
+      }
+    }
+
+    if (step === 1) {
+      if (!formData.department) {
+        newErrors.department = 'Selecione um departamento';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep(activeStep)) {
+      setActiveStep((prevStep) => prevStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
 
   const handleSubmit = () => {
-    setEmployees([...employees, formData]);
-    setFormData({ name: '', email: '', department: '', active: true });
-    setCurrentStep(1);
-    setCurrentView('list');
+    if (!validateStep(1)) return;
+
+    const newEmployee: Employee = {
+      ...formData,
+      id: employees.length + 1
+    };
+    
+    setEmployees([...employees, newEmployee]);
     alert('Colaborador cadastrado com sucesso!');
+    
+    // Reset form
+    setCurrentView('list');
+    setActiveStep(0);
+    setFormData({ name: '', email: '', department: '', active: true });
+    setErrors({});
   };
 
-  const handleInputChange = (field: keyof Employee, value: any) => {
-    setFormData({ ...formData, [field]: value });
+  const handleInputChange = (field: keyof Omit<Employee, 'id'>, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user types
+    setErrors((prev: any) => ({ ...prev, [field]: undefined }));
   };
 
-  return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Flugo - Sistema de Cadastro</h1>
-      
-      {currentView === 'list' ? (
-        <div>
-          <div style={{ marginBottom: '20px' }}>
-            <h2 style={{ display: 'inline' }}>Colaboradores</h2>
-            <button 
-              onClick={() => setCurrentView('form')}
-              style={{ 
-                float: 'right', 
-                padding: '10px 20px',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
+  const getAvatarColor = (name: string) => {
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  };
+
+  const getInitials = (name: string) => {
+    const names = name.split(' ');
+    return names.length > 1 
+      ? `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase()
+      : name.substring(0, 2).toUpperCase();
+  };
+
+  // List View
+  const ListView = () => (
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, mt: 2 }}>
+        <Typography variant="h4" sx={{ flexGrow: 1, fontWeight: 600 }}>
+          Colaboradores
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setCurrentView('form')}
+          sx={{ 
+            bgcolor: '#4CAF50',
+            '&:hover': { bgcolor: '#45a049' }
+          }}
+        >
+          Novo Colaborador
+        </Button>
+      </Box>
+
+      <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ bgcolor: '#f8f9fa' }}>
+              <TableCell sx={{ fontWeight: 600, color: '#666' }}>Nome ↓</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: '#666' }}>Email ↓</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: '#666' }}>Departamento ↓</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: '#666' }}>Status ↓</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {employees.map((employee) => (
+              <TableRow key={employee.id} sx={{ '&:hover': { bgcolor: '#f8f9fa' } }}>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Avatar 
+                      sx={{ 
+                        mr: 2, 
+                        bgcolor: getAvatarColor(employee.name),
+                        width: 36,
+                        height: 36,
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      {getInitials(employee.name)}
+                    </Avatar>
+                    <Typography>{employee.name}</Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>{employee.email}</TableCell>
+                <TableCell>{employee.department}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={employee.active ? 'Ativo' : 'Inativo'}
+                    color={employee.active ? 'success' : 'error'}
+                    size="small"
+                    sx={{ 
+                      fontWeight: 500,
+                      bgcolor: employee.active ? '#E8F5E9' : '#FFEBEE',
+                      color: employee.active ? '#4CAF50' : '#F44336',
+                      border: 'none'
+                    }}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
+
+  // Form View
+  const FormView = () => (
+    <Box sx={{ mt: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <IconButton onClick={() => setCurrentView('list')} sx={{ mr: 2 }}>
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="body2" sx={{ color: '#666' }}>
+          Colaboradores &gt; Cadastrar Colaborador
+        </Typography>
+      </Box>
+
+      <Box sx={{ bgcolor: 'white', borderRadius: 2, p: 4, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        {/* Progress Bar */}
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ 
+            height: 4, 
+            bgcolor: '#e0e0e0', 
+            borderRadius: 2,
+            overflow: 'hidden'
+          }}>
+            <Box sx={{ 
+              height: '100%', 
+              bgcolor: '#4CAF50',
+              width: `${((activeStep + 1) / 2) * 100}%`,
+              transition: 'width 0.3s ease'
+            }} />
+          </Box>
+          <Typography variant="body2" sx={{ mt: 1, color: '#666', textAlign: 'right' }}>
+            {((activeStep + 1) / 2 * 100).toFixed(0)}%
+          </Typography>
+        </Box>
+
+        {/* Steps */}
+        <Box sx={{ display: 'flex', mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
+            <Box sx={{
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              bgcolor: activeStep >= 0 ? '#4CAF50' : '#e0e0e0',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mr: 1,
+              fontSize: '0.875rem',
+              fontWeight: 600
+            }}>
+              {activeStep > 0 ? <CheckIcon sx={{ fontSize: 18 }} /> : '1'}
+            </Box>
+            <Typography sx={{ 
+              color: activeStep >= 0 ? '#333' : '#999',
+              fontWeight: activeStep === 0 ? 600 : 400
+            }}>
+              Infos Básicas
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              bgcolor: activeStep >= 1 ? '#4CAF50' : '#e0e0e0',
+              color: activeStep >= 1 ? 'white' : '#999',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mr: 1,
+              fontSize: '0.875rem',
+              fontWeight: 600
+            }}>
+              {activeStep > 1 ? <CheckIcon sx={{ fontSize: 18 }} /> : '2'}
+            </Box>
+            <Typography sx={{ 
+              color: activeStep >= 1 ? '#333' : '#999',
+              fontWeight: activeStep === 1 ? 600 : 400
+            }}>
+              Infos Profissionais
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Step Content */}
+        {activeStep === 0 && (
+          <Box>
+            <Typography variant="h5" sx={{ mb: 3, fontWeight: 600, color: '#333' }}>
+              Informações Básicas
+            </Typography>
+            
+            <TextField
+              fullWidth
+              label="Título"
+              placeholder="João da Silva"
+              value={formData.name}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              error={!!errors.name}
+              helperText={errors.name}
+              sx={{ mb: 3 }}
+              InputProps={{
+                sx: { 
+                  bgcolor: errors.name ? '#FFF3F3' : 'white',
+                  '&.Mui-focused': {
+                    bgcolor: 'white'
+                  }
+                }
               }}
-            >
-              Novo Colaborador
-            </button>
-          </div>
+            />
 
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f2f2f2' }}>
-                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Nome</th>
-                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Email</th>
-                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Departamento</th>
-                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((emp, index) => (
-                <tr key={index}>
-                  <td style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>{emp.name}</td>
-                  <td style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>{emp.email}</td>
-                  <td style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>{emp.department}</td>
-                  <td style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>
-                    <span style={{ 
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      backgroundColor: emp.active ? '#d4edda' : '#f8d7da',
-                      color: emp.active ? '#155724' : '#721c24'
-                    }}>
-                      {emp.active ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div>
-          <div style={{ marginBottom: '20px' }}>
-            <button onClick={() => setCurrentView('list')} style={{ marginRight: '10px' }}>
-              ← Voltar
-            </button>
-            <span>Colaboradores {'>'} Cadastrar Colaborador</span>
-          </div>
+            <TextField
+              fullWidth
+              label="E-mail"
+              placeholder="e.g. john@gmail.com"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              error={!!errors.email}
+              helperText={errors.email}
+              sx={{ mb: 3 }}
+              InputProps={{
+                sx: { 
+                  bgcolor: errors.email ? '#FFF3F3' : 'white',
+                  '&.Mui-focused': {
+                    bgcolor: 'white'
+                  }
+                }
+              }}
+            />
 
-          <div style={{ backgroundColor: 'white', padding: '20px', border: '1px solid #ddd', borderRadius: '4px' }}>
-            {/* Progress Bar */}
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ backgroundColor: '#e0e0e0', height: '4px', borderRadius: '2px' }}>
-                <div style={{ 
-                  backgroundColor: '#4CAF50', 
-                  height: '100%', 
-                  width: `${currentStep * 50}%`,
-                  borderRadius: '2px',
-                  transition: 'width 0.3s'
-                }}></div>
-              </div>
-              <p style={{ textAlign: 'right', fontSize: '12px', marginTop: '5px' }}>{currentStep * 50}%</p>
-            </div>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.active}
+                  onChange={(e) => handleInputChange('active', e.target.checked)}
+                  color="primary"
+                />
+              }
+              label="Ativar ao criar"
+              sx={{ mb: 3 }}
+            />
+          </Box>
+        )}
 
-            {/* Step Indicators */}
-            <div style={{ display: 'flex', marginBottom: '30px' }}>
-              <div style={{ marginRight: '30px' }}>
-                <span style={{ 
-                  display: 'inline-block',
-                  width: '30px',
-                  height: '30px',
-                  borderRadius: '50%',
-                  backgroundColor: currentStep >= 1 ? '#4CAF50' : '#e0e0e0',
-                  color: 'white',
-                  textAlign: 'center',
-                  lineHeight: '30px',
-                  marginRight: '10px'
-                }}>
-                  1
-                </span>
-                Infos Básicas
-              </div>
-              <div>
-                <span style={{ 
-                  display: 'inline-block',
-                  width: '30px',
-                  height: '30px',
-                  borderRadius: '50%',
-                  backgroundColor: currentStep >= 2 ? '#4CAF50' : '#e0e0e0',
-                  color: currentStep >= 2 ? 'white' : '#666',
-                  textAlign: 'center',
-                  lineHeight: '30px',
-                  marginRight: '10px'
-                }}>
-                  2
-                </span>
-                Infos Profissionais
-              </div>
-            </div>
-
-            {/* Form Steps */}
-            {currentStep === 1 ? (
-              <div>
-                <h3>Informações Básicas</h3>
-                
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px' }}>Nome</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    placeholder="João da Silva"
-                    style={{ 
-                      width: '100%', 
-                      padding: '8px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px'
-                    }}
-                  />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px' }}>E-mail</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="joao@example.com"
-                    style={{ 
-                      width: '100%', 
-                      padding: '8px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px'
-                    }}
-                  />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={formData.active}
-                      onChange={(e) => handleInputChange('active', e.target.checked)}
-                      style={{ marginRight: '5px' }}
-                    />
-                    Ativar ao criar
-                  </label>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <h3>Informações Profissionais</h3>
-                
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px' }}>Departamento</label>
-                  <select
-                    value={formData.department}
-                    onChange={(e) => handleInputChange('department', e.target.value)}
-                    style={{ 
-                      width: '100%', 
-                      padding: '8px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px'
-                    }}
-                  >
-                    <option value="">Selecione um departamento</option>
-                    <option value="Design">Design</option>
-                    <option value="TI">TI</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Produto">Produto</option>
-                    <option value="RH">RH</option>
-                  </select>
-                </div>
-              </div>
-            )}
-
-            {/* Navigation Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px' }}>
-              <button
-                onClick={() => currentStep === 1 ? setCurrentView('list') : setCurrentStep(1)}
-                style={{ 
-                  padding: '8px 16px',
-                  backgroundColor: '#f0f0f0',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
+        {activeStep === 1 && (
+          <Box>
+            <Typography variant="h5" sx={{ mb: 3, fontWeight: 600, color: '#333' }}>
+              Informações Profissionais
+            </Typography>
+            
+            <FormControl fullWidth error={!!errors.department}>
+              <InputLabel>Departamento</InputLabel>
+              <Select
+                value={formData.department}
+                onChange={(e) => handleInputChange('department', e.target.value)}
+                label="Departamento"
+                sx={{ 
+                  bgcolor: errors.department ? '#FFF3F3' : 'white',
+                  '&.Mui-focused': {
+                    bgcolor: 'white'
+                  }
                 }}
               >
-                Voltar
-              </button>
-              
-              {currentStep === 1 ? (
-                <button
-                  onClick={() => setCurrentStep(2)}
-                  style={{ 
-                    padding: '8px 16px',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Próximo
-                </button>
-              ) : (
-                <button
-                  onClick={handleSubmit}
-                  style={{ 
-                    padding: '8px 16px',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Concluir
-                </button>
+                <MenuItem value="">Selecione um departamento</MenuItem>
+                {departments.map((dept) => (
+                  <MenuItem key={dept} value={dept}>{dept}</MenuItem>
+                ))}
+              </Select>
+              {errors.department && (
+                <FormHelperText>{errors.department}</FormHelperText>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+            </FormControl>
+          </Box>
+        )}
+
+        {/* Navigation Buttons */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+          <Button
+            onClick={() => activeStep === 0 ? setCurrentView('list') : handleBack()}
+            sx={{ color: '#666' }}
+          >
+            Voltar
+          </Button>
+          
+          {activeStep === 0 ? (
+            <Button
+              variant="contained"
+              onClick={handleNext}
+              sx={{ 
+                bgcolor: '#4CAF50',
+                '&:hover': { bgcolor: '#45a049' }
+              }}
+            >
+              Próximo
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              sx={{ 
+                bgcolor: '#4CAF50',
+                '&:hover': { bgcolor: '#45a049' }
+              }}
+            >
+              Concluir
+            </Button>
+          )}
+        </Box>
+      </Box>
+    </Box>
+  );
+
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      
+      {/* Header */}
+      <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <Toolbar>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ 
+              bgcolor: '#4CAF50', 
+              width: 32, 
+              height: 32, 
+              borderRadius: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mr: 1
+            }}>
+              <Typography sx={{ color: 'white', fontWeight: 700, fontSize: '1.2rem' }}>
+                F
+              </Typography>
+            </Box>
+            <Typography variant="h6" sx={{ color: '#333', fontWeight: 600 }}>
+              Flugo
+            </Typography>
+          </Box>
+          <Box sx={{ flexGrow: 1 }} />
+          <IconButton>
+            <Avatar sx={{ width: 32, height: 32 }} />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      {/* Main Content */}
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        {currentView === 'list' ? <ListView /> : <FormView />}
+      </Container>
+    </ThemeProvider>
   );
 }
 
