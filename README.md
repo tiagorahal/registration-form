@@ -241,8 +241,8 @@ Este projeto foi desenvolvido como desafio técnico para a **Flugo**.
 ## 📞 Contato
 
 **[Seu Nome]**
-- GitHub: [@seu-usuario](https://github.com/tiagorahal)
-- LinkedIn: [seu-perfil](https://www.linkedin.com/in/tiagorahal/)
+- GitHub: [@tiagorahal](https://github.com/tiagorahal)
+- LinkedIn: [tiagorahal](https://www.linkedin.com/in/tiagorahal/)
 - Email: rahal.aires@gmail.com
 
 ---
