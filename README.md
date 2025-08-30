@@ -210,23 +210,6 @@ Este é um erro conhecido do TypeScript com Vite. A solução está implementada
 - Confirme o nome da coleção: `employees`
 - Verifique as regras do Firestore
 
-## 👨‍💻 Desenvolvimento
-
-### Commits Semânticos
-O projeto segue o padrão de commits semânticos:
-- `feat:` Nova funcionalidade
-- `fix:` Correção de bug
-- `docs:` Documentação
-- `style:` Formatação
-- `refactor:` Refatoração
-- `test:` Testes
-- `chore:` Tarefas gerais
-
-### Branches
-- `main` - Produção
-- `develop` - Desenvolvimento
-- `feature/*` - Novas funcionalidades
-
 ## 📄 Licença
 
 Este projeto foi desenvolvido como desafio técnico para a **Flugo**.
