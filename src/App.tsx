@@ -49,16 +49,21 @@ import {
   Timestamp
 } from 'firebase/firestore';
 
-const env = import.meta.env as any;
-
-// Agora use 'env' ao invés de 'import.meta.env'
+// Firebase configuration - COM CORREÇÃO
+// @ts-ignore - Ignorar erro de tipagem do Vite
 const firebaseConfig = {
-  apiKey: env.VITE_FIREBASE_API_KEY || '',
-  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || '',
-  projectId: env.VITE_FIREBASE_PROJECT_ID || '',
-  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: env.VITE_FIREBASE_APP_ID || ''
+  // @ts-ignore
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  // @ts-ignore  
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  // @ts-ignore
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  // @ts-ignore
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  // @ts-ignore
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  // @ts-ignore
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || ''
 };
 
 // Initialize Firebase
