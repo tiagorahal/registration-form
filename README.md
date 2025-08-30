@@ -245,4 +245,3 @@ Este projeto foi desenvolvido como desafio técnico para a **Flugo**.
 - LinkedIn: [seu-perfil](https://www.linkedin.com/in/tiagorahal/)
 - Email: rahal.aires@gmail.com
 
----
