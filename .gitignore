@@ -24,7 +24,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables - IMPORTANTE!
+# Environment variables - IMPORTANT!
 .env
 .env.local
 .env.development.local
@@ -39,16 +39,34 @@ firestore-debug.log
 ui-debug.log
 firestore.rules
 firestore.indexes.json
+firebase.json
 
 # Backup files
 *.backup
 *.bak
 *.tmp
+*~
 
 # OS files
 Thumbs.db
 desktop.ini
+.DS_Store
 
 # Build files
 build/
 .cache/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/

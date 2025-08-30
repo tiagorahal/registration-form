@@ -49,12 +49,12 @@ import {
   Timestamp
 } from 'firebase/firestore';
 
-// Firebase configuration - COM CORREÇÃO
-// @ts-ignore - Ignorar erro de tipagem do Vite
+// Firebase configuration with TypeScript error fix
+// @ts-ignore - Vite env vars not recognized by TypeScript
 const firebaseConfig = {
   // @ts-ignore
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-  // @ts-ignore  
+  // @ts-ignore
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
   // @ts-ignore
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
@@ -66,11 +66,33 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || ''
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Validation for development
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.warn('⚠️ Firebase configuration incomplete!');
+  console.warn('📝 Please check your .env file in the project root');
+  console.warn('📋 Required: VITE_FIREBASE_API_KEY, VITE_FIREBASE_PROJECT_ID, etc.');
+}
 
-// Theme
+// Initialize Firebase WITH PROPER TYPING - CORREÇÃO AQUI!
+let app: any;
+let db: any; // ADICIONE O TIPO 'any' EXPLICITAMENTE
+
+try {
+  app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+  console.log('✅ Firebase initialized successfully!');
+  console.log('📊 Project ID:', firebaseConfig.projectId);
+} catch (error) {
+  console.error('❌ Error initializing Firebase:', error);
+  console.error('Please check your Firebase configuration');
+  // Create dummy instances to prevent app crash
+  app = {} as any;
+  db = {} as any;
+}
+
+// Continue com o resto do código...
+
+// Theme configuration
 const theme = createTheme({
   palette: {
     primary: {
@@ -119,7 +141,7 @@ interface Employee {
   createdAt?: Timestamp;
 }
 
-// Departments
+// Departments list
 const departments = [
   'Design',
   'TI',
@@ -150,12 +172,18 @@ function App() {
     severity: 'success' as 'success' | 'error'
   });
 
-  // Load employees from Firebase on mount
+  // Load employees from Firebase on component mount
   useEffect(() => {
     loadEmployees();
   }, []);
 
   const loadEmployees = async () => {
+    if (!db || Object.keys(db).length === 0) {
+      console.warn('Firebase not initialized, using demo mode');
+      setLoadingList(false);
+      return;
+    }
+
     try {
       setLoadingList(true);
       const q = query(collection(db, 'employees'), orderBy('createdAt', 'desc'));
@@ -170,6 +198,7 @@ function App() {
       });
       
       setEmployees(employeesList);
+      console.log(`✅ Loaded ${employeesList.length} employees`);
     } catch (error) {
       console.error('Error loading employees:', error);
       showSnackbar('Erro ao carregar colaboradores', 'error');
@@ -225,18 +254,24 @@ function App() {
   const handleSubmit = async () => {
     if (!validateStep(1)) return;
 
+    if (!db || Object.keys(db).length === 0) {
+      showSnackbar('Firebase não configurado. Verifique o arquivo .env', 'error');
+      return;
+    }
+
     try {
       setLoading(true);
       
       // Add employee to Firebase
-      await addDoc(collection(db, 'employees'), {
-        name: formData.name,
-        email: formData.email,
+      const docRef = await addDoc(collection(db, 'employees'), {
+        name: formData.name.trim(),
+        email: formData.email.toLowerCase().trim(),
         department: formData.department,
         active: formData.active,
         createdAt: Timestamp.now()
       });
       
+      console.log('✅ Employee added with ID:', docRef.id);
       showSnackbar('Colaborador cadastrado com sucesso!', 'success');
       
       // Reset form and go back to list
@@ -246,7 +281,7 @@ function App() {
       setErrors({});
       
       // Reload employees list
-      loadEmployees();
+      await loadEmployees();
       
     } catch (error) {
       console.error('Error adding employee:', error);
@@ -263,19 +298,19 @@ function App() {
   };
 
   const getAvatarColor = (name: string) => {
-    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'];
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#74B9FF', '#A29BFE'];
     const index = name.charCodeAt(0) % colors.length;
     return colors[index];
   };
 
   const getInitials = (name: string) => {
-    const names = name.split(' ');
+    const names = name.trim().split(' ');
     return names.length > 1 
       ? `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase()
       : name.substring(0, 2).toUpperCase();
   };
 
-  // List View
+  // List View Component
   const ListView = () => (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, mt: 2 }}>
@@ -288,7 +323,8 @@ function App() {
           onClick={() => setCurrentView('form')}
           sx={{ 
             bgcolor: '#4CAF50',
-            '&:hover': { bgcolor: '#45a049' }
+            '&:hover': { bgcolor: '#45a049' },
+            boxShadow: '0 4px 6px rgba(76, 175, 80, 0.3)'
           }}
         >
           Novo Colaborador
@@ -300,7 +336,7 @@ function App() {
           <CircularProgress />
         </Box>
       ) : employees.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
+        <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 2 }}>
           <Typography variant="h6" color="textSecondary" gutterBottom>
             Nenhum colaborador cadastrado
           </Typography>
@@ -373,7 +409,7 @@ function App() {
     </Box>
   );
 
-  // Form View
+  // Form View Component
   const FormView = () => (
     <Box sx={{ mt: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
@@ -406,7 +442,7 @@ function App() {
           </Typography>
         </Box>
 
-        {/* Steps */}
+        {/* Step Indicators */}
         <Box sx={{ display: 'flex', mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
             <Box sx={{
@@ -616,7 +652,9 @@ function App() {
           </Box>
           <Box sx={{ flexGrow: 1 }} />
           <IconButton>
-            <Avatar sx={{ width: 32, height: 32 }} />
+            <Avatar sx={{ width: 32, height: 32, bgcolor: '#4CAF50' }}>
+              <PersonIcon sx={{ fontSize: 20 }} />
+            </Avatar>
           </IconButton>
         </Toolbar>
       </AppBar>
