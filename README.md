@@ -18,8 +18,8 @@ Sistema de cadastro de funcionários com formulário multi-step desenvolvido em 
 
 ### 1. Clone o repositório
 ```bash
-git clone https://github.com/seu-usuario/flugo-employee-registration.git
-cd flugo-employee-registration
+git clone https://github.com/tiagorahal/registration-form.git
+cd registration-form
 ```
 
 ### 2. Instale as dependências
