@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ThemeProvider,
   createTheme,
@@ -26,13 +26,49 @@ import {
   Avatar,
   AppBar,
   Toolbar,
-  FormHelperText
+  FormHelperText,
+  CircularProgress,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import {
   Person as PersonIcon,
   ArrowBack as ArrowBackIcon,
   Check as CheckIcon
 } from '@mui/icons-material';
+
+// Firebase imports
+import { initializeApp } from 'firebase/app';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  orderBy,
+  query,
+  Timestamp
+} from 'firebase/firestore';
+
+// Firebase configuration - COM CORREÇÃO
+// @ts-ignore - Ignorar erro de tipagem do Vite
+const firebaseConfig = {
+  // @ts-ignore
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  // @ts-ignore  
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  // @ts-ignore
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  // @ts-ignore
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  // @ts-ignore
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  // @ts-ignore
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || ''
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 // Theme
 const theme = createTheme({
@@ -75,11 +111,12 @@ const theme = createTheme({
 
 // Types
 interface Employee {
-  id: number;
+  id?: string;
   name: string;
   email: string;
   department: string;
   active: boolean;
+  createdAt?: Timestamp;
 }
 
 // Departments
@@ -97,19 +134,61 @@ const departments = [
 function App() {
   const [currentView, setCurrentView] = useState<'list' | 'form'>('list');
   const [activeStep, setActiveStep] = useState(0);
-  const [employees, setEmployees] = useState<Employee[]>([
-    { id: 1, name: 'Fernanda Torres', email: 'fernandatorres@flugo.com', department: 'Design', active: true },
-    { id: 2, name: 'Joana D\'Arc', email: 'joanadarc@flugo.com', department: 'TI', active: true },
-    { id: 3, name: 'Mari Froes', email: 'marifroes@flugo.com', department: 'Marketing', active: true },
-    { id: 4, name: 'Clara Costa', email: 'claracosta@flugo.com', department: 'Produto', active: false },
-  ]);
-  const [formData, setFormData] = useState<Omit<Employee, 'id'>>({
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingList, setLoadingList] = useState(true);
+  const [formData, setFormData] = useState<Employee>({
     name: '',
     email: '',
     department: '',
     active: true,
   });
   const [errors, setErrors] = useState<any>({});
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error'
+  });
+
+  // Load employees from Firebase on mount
+  useEffect(() => {
+    loadEmployees();
+  }, []);
+
+  const loadEmployees = async () => {
+    try {
+      setLoadingList(true);
+      const q = query(collection(db, 'employees'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const employeesList: Employee[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        employeesList.push({
+          id: doc.id,
+          ...doc.data()
+        } as Employee);
+      });
+      
+      setEmployees(employeesList);
+    } catch (error) {
+      console.error('Error loading employees:', error);
+      showSnackbar('Erro ao carregar colaboradores', 'error');
+    } finally {
+      setLoadingList(false);
+    }
+  };
+
+  const showSnackbar = (message: string, severity: 'success' | 'error') => {
+    setSnackbar({
+      open: true,
+      message,
+      severity
+    });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const validateStep = (step: number): boolean => {
     const newErrors: any = {};
@@ -143,25 +222,41 @@ function App() {
     setActiveStep((prevStep) => prevStep - 1);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateStep(1)) return;
 
-    const newEmployee: Employee = {
-      ...formData,
-      id: employees.length + 1
-    };
-    
-    setEmployees([...employees, newEmployee]);
-    alert('Colaborador cadastrado com sucesso!');
-    
-    // Reset form
-    setCurrentView('list');
-    setActiveStep(0);
-    setFormData({ name: '', email: '', department: '', active: true });
-    setErrors({});
+    try {
+      setLoading(true);
+      
+      // Add employee to Firebase
+      await addDoc(collection(db, 'employees'), {
+        name: formData.name,
+        email: formData.email,
+        department: formData.department,
+        active: formData.active,
+        createdAt: Timestamp.now()
+      });
+      
+      showSnackbar('Colaborador cadastrado com sucesso!', 'success');
+      
+      // Reset form and go back to list
+      setCurrentView('list');
+      setActiveStep(0);
+      setFormData({ name: '', email: '', department: '', active: true });
+      setErrors({});
+      
+      // Reload employees list
+      loadEmployees();
+      
+    } catch (error) {
+      console.error('Error adding employee:', error);
+      showSnackbar('Erro ao cadastrar colaborador. Tente novamente.', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleInputChange = (field: keyof Omit<Employee, 'id'>, value: any) => {
+  const handleInputChange = (field: keyof Employee, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user types
     setErrors((prev: any) => ({ ...prev, [field]: undefined }));
@@ -200,55 +295,81 @@ function App() {
         </Button>
       </Box>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ bgcolor: '#f8f9fa' }}>
-              <TableCell sx={{ fontWeight: 600, color: '#666' }}>Nome ↓</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#666' }}>Email ↓</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#666' }}>Departamento ↓</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#666' }}>Status ↓</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {employees.map((employee) => (
-              <TableRow key={employee.id} sx={{ '&:hover': { bgcolor: '#f8f9fa' } }}>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar 
-                      sx={{ 
-                        mr: 2, 
-                        bgcolor: getAvatarColor(employee.name),
-                        width: 36,
-                        height: 36,
-                        fontSize: '0.875rem'
-                      }}
-                    >
-                      {getInitials(employee.name)}
-                    </Avatar>
-                    <Typography>{employee.name}</Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>{employee.email}</TableCell>
-                <TableCell>{employee.department}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={employee.active ? 'Ativo' : 'Inativo'}
-                    color={employee.active ? 'success' : 'error'}
-                    size="small"
-                    sx={{ 
-                      fontWeight: 500,
-                      bgcolor: employee.active ? '#E8F5E9' : '#FFEBEE',
-                      color: employee.active ? '#4CAF50' : '#F44336',
-                      border: 'none'
-                    }}
-                  />
-                </TableCell>
+      {loadingList ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      ) : employees.length === 0 ? (
+        <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
+          <Typography variant="h6" color="textSecondary" gutterBottom>
+            Nenhum colaborador cadastrado
+          </Typography>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+            Clique no botão "Novo Colaborador" para adicionar o primeiro funcionário.
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setCurrentView('form')}
+            sx={{ 
+              bgcolor: '#4CAF50',
+              '&:hover': { bgcolor: '#45a049' }
+            }}
+          >
+            Adicionar Primeiro Colaborador
+          </Button>
+        </Paper>
+      ) : (
+        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: '#f8f9fa' }}>
+                <TableCell sx={{ fontWeight: 600, color: '#666' }}>Nome ↓</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#666' }}>Email ↓</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#666' }}>Departamento ↓</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#666' }}>Status ↓</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {employees.map((employee) => (
+                <TableRow key={employee.id} sx={{ '&:hover': { bgcolor: '#f8f9fa' } }}>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Avatar 
+                        sx={{ 
+                          mr: 2, 
+                          bgcolor: getAvatarColor(employee.name),
+                          width: 36,
+                          height: 36,
+                          fontSize: '0.875rem'
+                        }}
+                      >
+                        {getInitials(employee.name)}
+                      </Avatar>
+                      <Typography>{employee.name}</Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>{employee.email}</TableCell>
+                  <TableCell>{employee.department}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={employee.active ? 'Ativo' : 'Inativo'}
+                      color={employee.active ? 'success' : 'error'}
+                      size="small"
+                      sx={{ 
+                        fontWeight: 500,
+                        bgcolor: employee.active ? '#E8F5E9' : '#FFEBEE',
+                        color: employee.active ? '#4CAF50' : '#F44336',
+                        border: 'none'
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Box>
   );
 
@@ -432,6 +553,7 @@ function App() {
           <Button
             onClick={() => activeStep === 0 ? setCurrentView('list') : handleBack()}
             sx={{ color: '#666' }}
+            disabled={loading}
           >
             Voltar
           </Button>
@@ -451,12 +573,14 @@ function App() {
             <Button
               variant="contained"
               onClick={handleSubmit}
+              disabled={loading}
               sx={{ 
                 bgcolor: '#4CAF50',
-                '&:hover': { bgcolor: '#45a049' }
+                '&:hover': { bgcolor: '#45a049' },
+                minWidth: 120
               }}
             >
-              Concluir
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Concluir'}
             </Button>
           )}
         </Box>
@@ -501,6 +625,22 @@ function App() {
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {currentView === 'list' ? <ListView /> : <FormView />}
       </Container>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </ThemeProvider>
   );
 }
