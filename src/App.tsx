@@ -49,7 +49,6 @@ import {
   Timestamp
 } from 'firebase/firestore';
 
-// Firebase configuration with TypeScript error fix
 // @ts-ignore - Vite env vars not recognized by TypeScript
 const firebaseConfig = {
   // @ts-ignore
@@ -73,9 +72,8 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
   console.warn('📋 Required: VITE_FIREBASE_API_KEY, VITE_FIREBASE_PROJECT_ID, etc.');
 }
 
-// Initialize Firebase WITH PROPER TYPING - CORREÇÃO AQUI!
 let app: any;
-let db: any; // ADICIONE O TIPO 'any' EXPLICITAMENTE
+let db: any; 
 
 try {
   app = initializeApp(firebaseConfig);
@@ -85,12 +83,10 @@ try {
 } catch (error) {
   console.error('❌ Error initializing Firebase:', error);
   console.error('Please check your Firebase configuration');
-  // Create dummy instances to prevent app crash
   app = {} as any;
   db = {} as any;
 }
 
-// Continue com o resto do código...
 
 // Theme configuration
 const theme = createTheme({
