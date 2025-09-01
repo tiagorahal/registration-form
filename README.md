@@ -10,7 +10,7 @@ Sistema completo de cadastro de funcionários com formulário multi-step, desenv
 
 ## ✨ Demonstração
 
-[Live version](https://registration-form-d93thbm4j-tiagorahals-projects.vercel.app/)
+[Live version](https://registration-form-omega-seven.vercel.app//)
 
 ### 🎨 Interface Principal
 - **Lista de Colaboradores**: Visualização em tabela com avatares personalizados
