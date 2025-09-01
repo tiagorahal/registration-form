@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   ThemeProvider,
   createTheme,
@@ -46,7 +46,8 @@ import {
   getDocs,
   orderBy,
   query,
-  Timestamp
+  Timestamp,
+  Firestore
 } from 'firebase/firestore';
 
 // Firebase configuration with TypeScript error fix
@@ -73,9 +74,9 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
   console.warn('📋 Required: VITE_FIREBASE_API_KEY, VITE_FIREBASE_PROJECT_ID, etc.');
 }
 
-// Initialize Firebase
-let app;
-let db;
+// Initialize Firebase with proper typing
+let app: any;
+let db: Firestore | null = null;
 
 try {
   app = initializeApp(firebaseConfig);
@@ -85,9 +86,7 @@ try {
 } catch (error) {
   console.error('❌ Error initializing Firebase:', error);
   console.error('Please check your Firebase configuration');
-  // Create dummy instances to prevent app crash
-  app = {} as any;
-  db = {} as any;
+  db = null;
 }
 
 // Theme configuration
@@ -190,7 +189,7 @@ function App() {
   }, []);
 
   const loadEmployees = async () => {
-    if (!db || Object.keys(db).length === 0) {
+    if (!db) {
       console.warn('Firebase not initialized, using demo mode');
       setLoadingList(false);
       return;
@@ -266,7 +265,7 @@ function App() {
   const handleSubmit = async () => {
     if (!validateStep(1)) return;
 
-    if (!db || Object.keys(db).length === 0) {
+    if (!db) {
       showSnackbar('Firebase não configurado. Verifique o arquivo .env', 'error');
       return;
     }
