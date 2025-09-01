@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   ThemeProvider,
   createTheme,
@@ -32,12 +32,9 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListItemButton,
-  Divider
+  ListItemButton
 } from '@mui/material';
 import {
-  Person as PersonIcon,
-  ArrowBack as ArrowBackIcon,
   Check as CheckIcon,
   People as PeopleIcon,
   ChevronRight as ChevronRightIcon,
@@ -53,7 +50,8 @@ import {
   getDocs,
   orderBy,
   query,
-  Timestamp
+  Timestamp,
+  Firestore
 } from 'firebase/firestore';
 
 // Firebase configuration with TypeScript error fix
@@ -80,9 +78,9 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
   console.warn('📋 Required: VITE_FIREBASE_API_KEY, VITE_FIREBASE_PROJECT_ID, etc.');
 }
 
-// Initialize Firebase
-let app;
-let db;
+// Initialize Firebase with proper typing
+let app: any;
+let db: Firestore | null = null;
 
 try {
   app = initializeApp(firebaseConfig);
@@ -92,8 +90,7 @@ try {
 } catch (error) {
   console.error('❌ Error initializing Firebase:', error);
   console.error('Please check your Firebase configuration');
-  app = {} as any;
-  db = {} as any;
+  db = null;
 }
 
 // Theme configuration
@@ -183,13 +180,6 @@ const getAvatarColor = (name: string) => {
   return colors[index];
 };
 
-const getInitials = (name: string) => {
-  const names = name.trim().split(' ');
-  return names.length > 1 
-    ? `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase()
-    : name.substring(0, 2).toUpperCase();
-};
-
 const drawerWidth = 280;
 
 function App() {
@@ -217,7 +207,7 @@ function App() {
   }, []);
 
   const loadEmployees = async () => {
-    if (!db || Object.keys(db).length === 0) {
+    if (!db) {
       console.warn('Firebase not initialized, using demo mode');
       setLoadingList(false);
       return;
@@ -293,7 +283,7 @@ function App() {
   const handleSubmit = async () => {
     if (!validateStep(1)) return;
 
-    if (!db || Object.keys(db).length === 0) {
+    if (!db) {
       showSnackbar('Firebase não configurado. Verifique o arquivo .env', 'error');
       return;
     }
@@ -431,17 +421,6 @@ function App() {
             {currentView === 'list' ? (
               /* List View */
               <Box>
-                {/* Breadcrumb for form view */}
-                {currentView === 'form' && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                    <PeopleIcon sx={{ mr: 1, color: '#666', fontSize: 20 }} />
-                    <Typography variant="body2" sx={{ color: '#666' }}>
-                      Colaboradores
-                    </Typography>
-                    <ChevronRightIcon sx={{ mx: 1, color: '#999', fontSize: 16 }} />
-                  </Box>
-                )}
-
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
                   <Typography variant="h4" sx={{ flexGrow: 1, fontWeight: 600, color: '#1a1a1a' }}>
                     Colaboradores
