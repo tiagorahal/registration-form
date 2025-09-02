@@ -12,14 +12,21 @@ import {
   Typography,
   Chip,
   CircularProgress,
-  Button
+  Button,
+  IconButton
 } from '@mui/material';
+import { 
+  Edit as EditIcon,
+  Delete as DeleteIcon 
+} from '@mui/icons-material';
 import { Colaborador } from '../../types/colaborador';
 
 interface ListaColaboradoresProps {
   colaboradores: Colaborador[];
   loading: boolean;
   onAddClick: () => void;
+  onEditClick: (colaborador: Colaborador) => void;
+  onDeleteClick: (colaborador: Colaborador) => void;
 }
 
 const getAvatarEmoji = (name: string) => {
@@ -41,7 +48,9 @@ const getAvatarColor = (name: string) => {
 export const ListaColaboradores: React.FC<ListaColaboradoresProps> = ({ 
   colaboradores, 
   loading,
-  onAddClick
+  onAddClick,
+  onEditClick,
+  onDeleteClick
 }) => {
   if (loading) {
     return (
@@ -100,6 +109,7 @@ export const ListaColaboradores: React.FC<ListaColaboradoresProps> = ({
             <TableCell sx={{ fontWeight: 500, color: '#666' }}>Departamento ↓</TableCell>
             <TableCell sx={{ fontWeight: 500, color: '#666' }}>Nível</TableCell>
             <TableCell sx={{ fontWeight: 500, color: '#666' }}>Status ↓</TableCell>
+            <TableCell sx={{ fontWeight: 500, color: '#666' }}>Ações</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -163,6 +173,30 @@ export const ListaColaboradores: React.FC<ListaColaboradoresProps> = ({
                     textTransform: 'capitalize'
                   }}
                 />
+              </TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <IconButton 
+                    size="small"
+                    onClick={() => onEditClick(colaborador)}
+                    sx={{ 
+                      color: '#1976d2',
+                      '&:hover': { bgcolor: '#e3f2fd' }
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton 
+                    size="small"
+                    onClick={() => onDeleteClick(colaborador)}
+                    sx={{ 
+                      color: '#d32f2f',
+                      '&:hover': { bgcolor: '#ffebee' }
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Box>
               </TableCell>
             </TableRow>
           ))}

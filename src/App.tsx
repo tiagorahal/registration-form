@@ -8,15 +8,21 @@ import {
   Typography,
   Snackbar,
   Alert,
-  Paper
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
 import { ListaColaboradores } from './components/colaboradores/ListaColaboradores';
 import { StepperCadastro } from './components/colaboradores/StepperCadastro';
 import { useColaboradores } from './hooks/useColaboradores';
+import { Colaborador } from './types/colaborador';
 
-// Theme configuration (mantém o mesmo)
+// Theme configuration
 const theme = createTheme({
   palette: {
     primary: {
@@ -66,7 +72,13 @@ const drawerWidth = 280;
 
 function App() {
   const [currentView, setCurrentView] = useState<'list' | 'form'>('list');
-  const { colaboradores, loading, reloadColaboradores } = useColaboradores();
+  const [colaboradorEdit, setColaboradorEdit] = useState<Colaborador | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    colaborador: Colaborador | null;
+  }>({ open: false, colaborador: null });
+  
+  const { colaboradores, loading, reloadColaboradores, deleteColaborador } = useColaboradores();
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -86,9 +98,41 @@ function App() {
   };
 
   const handleSuccess = async () => {
-    showSnackbar('Colaborador cadastrado com sucesso!', 'success');
-    await reloadColaboradores(); // Recarrega a lista
+    const message = colaboradorEdit 
+      ? 'Colaborador atualizado com sucesso!' 
+      : 'Colaborador cadastrado com sucesso!';
+    
+    showSnackbar(message, 'success');
+    await reloadColaboradores();
     setCurrentView('list');
+    setColaboradorEdit(null);
+  };
+
+  const handleEditClick = (colaborador: Colaborador) => {
+    setColaboradorEdit(colaborador);
+    setCurrentView('form');
+  };
+
+  const handleDeleteClick = (colaborador: Colaborador) => {
+    setDeleteDialog({ open: true, colaborador });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteDialog.colaborador?.id) {
+      try {
+        await deleteColaborador(deleteDialog.colaborador.id);
+        showSnackbar('Colaborador excluído com sucesso!', 'success');
+        await reloadColaboradores();
+      } catch (error) {
+        showSnackbar('Erro ao excluir colaborador', 'error');
+      }
+    }
+    setDeleteDialog({ open: false, colaborador: null });
+  };
+
+  const handleNewClick = () => {
+    setColaboradorEdit(null);
+    setCurrentView('form');
   };
 
   return (
@@ -114,7 +158,7 @@ function App() {
                   </Typography>
                   <Button
                     variant="contained"
-                    onClick={() => setCurrentView('form')}
+                    onClick={handleNewClick}
                     sx={{ 
                       bgcolor: '#4CAF50',
                       borderRadius: 2,
@@ -132,7 +176,9 @@ function App() {
                 <ListaColaboradores 
                   colaboradores={colaboradores}
                   loading={loading}
-                  onAddClick={() => setCurrentView('form')}
+                  onAddClick={handleNewClick}
+                  onEditClick={handleEditClick}
+                  onDeleteClick={handleDeleteClick}
                 />
               </Box>
             ) : (
@@ -140,7 +186,10 @@ function App() {
                 {/* Breadcrumb */}
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                   <Button 
-                    onClick={() => setCurrentView('list')}
+                    onClick={() => {
+                      setCurrentView('list');
+                      setColaboradorEdit(null);
+                    }}
                     sx={{ color: '#666' }}
                   >
                     ← Voltar para Colaboradores
@@ -154,8 +203,12 @@ function App() {
                   border: '1px solid #e0e0e0'
                 }}>
                   <StepperCadastro
-                    onClose={() => setCurrentView('list')}
+                    onClose={() => {
+                      setCurrentView('list');
+                      setColaboradorEdit(null);
+                    }}
                     onSuccess={handleSuccess}
+                    colaboradorEdit={colaboradorEdit}
                   />
                 </Paper>
               </Box>
@@ -163,6 +216,39 @@ function App() {
           </Box>
         </Box>
       </Box>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, colaborador: null })}
+      >
+        <DialogTitle>Confirmar Exclusão</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Tem certeza que deseja excluir o colaborador{' '}
+            <strong>{deleteDialog.colaborador?.nome}</strong>?
+            Esta ação não pode ser desfeita.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setDeleteDialog({ open: false, colaborador: null })}
+            sx={{ color: '#666' }}
+          >
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleConfirmDelete}
+            variant="contained"
+            sx={{ 
+              bgcolor: '#d32f2f',
+              '&:hover': { bgcolor: '#c62828' }
+            }}
+          >
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Snackbar for notifications */}
       <Snackbar
