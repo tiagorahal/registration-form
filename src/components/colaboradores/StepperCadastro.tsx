@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -23,7 +23,7 @@ const steps = ['Dados Pessoais', 'Informações Profissionais', 'Endereço', 'Re
 interface StepperCadastroProps {
   onClose: () => void;
   onSuccess: () => void;
-  colaboradorEdit?: Colaborador;
+  colaboradorEdit?: Colaborador | null;
 }
 
 export const StepperCadastro: React.FC<StepperCadastroProps> = ({ 
@@ -38,31 +38,38 @@ export const StepperCadastro: React.FC<StepperCadastroProps> = ({
   // Filtrar gestores para o autocomplete
   const gestores = colaboradores.filter(c => c.nivelHierarquico === 'gestor');
   
-  const [formData, setFormData] = useState<Partial<Colaborador>>(
-    colaboradorEdit || {
-      nome: '',
-      email: '',
-      cpf: '',
-      telefone: '',
-      dataNascimento: '',
-      cargo: '',
-      dataAdmissao: '',
-      nivelHierarquico: 'junior',
-      gestorResponsavel: '',
-      salarioBase: 0,
-      departamento: '',
-      status: 'ativo',
-      endereco: {
-        cep: '',
-        logradouro: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        estado: ''
-      }
+  const [formData, setFormData] = useState<Partial<Colaborador>>({
+    nome: '',
+    email: '',
+    cpf: '',
+    telefone: '',
+    dataNascimento: '',
+    cargo: '',
+    dataAdmissao: '',
+    nivelHierarquico: 'junior',
+    gestorResponsavel: '',
+    salarioBase: 0,
+    departamento: '',
+    status: 'ativo',
+    endereco: {
+      cep: '',
+      logradouro: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      estado: ''
     }
-  );
+  });
+
+  // Preenche o formulário quando em modo de edição
+  useEffect(() => {
+    if (colaboradorEdit) {
+      setFormData({
+        ...colaboradorEdit
+      });
+    }
+  }, [colaboradorEdit]);
 
   const [errors, setErrors] = useState<any>({});
 
@@ -164,8 +171,10 @@ export const StepperCadastro: React.FC<StepperCadastroProps> = ({
       setLoading(true);
       
       if (colaboradorEdit?.id) {
+        // Modo edição
         await updateColaborador(colaboradorEdit.id, formData);
       } else {
+        // Modo criação
         await addColaborador(formData as Omit<Colaborador, 'id'>);
       }
       
@@ -344,6 +353,21 @@ export const StepperCadastro: React.FC<StepperCadastroProps> = ({
                   )}
                 </FormControl>
               </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={formData.status}
+                    onChange={(e) => handleInputChange('status', e.target.value)}
+                    label="Status"
+                  >
+                    <MenuItem value="ativo">Ativo</MenuItem>
+                    <MenuItem value="inativo">Inativo</MenuItem>
+                    <MenuItem value="ferias">Férias</MenuItem>
+                    <MenuItem value="afastado">Afastado</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
           </Box>
         );
@@ -450,6 +474,7 @@ export const StepperCadastro: React.FC<StepperCadastroProps> = ({
                 <Typography>Departamento: {formData.departamento}</Typography>
                 <Typography>Nível: {formData.nivelHierarquico}</Typography>
                 <Typography>Salário: R$ {formData.salarioBase?.toLocaleString('pt-BR')}</Typography>
+                <Typography>Status: {formData.status}</Typography>
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle2" color="textSecondary" sx={{ mt: 2 }}>
@@ -475,6 +500,10 @@ export const StepperCadastro: React.FC<StepperCadastroProps> = ({
 
   return (
     <Box sx={{ width: '100%' }}>
+      <Typography variant="h5" sx={{ mb: 3 }}>
+        {colaboradorEdit ? 'Editar Colaborador' : 'Cadastrar Colaborador'}
+      </Typography>
+
       {/* Progress Bar */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{ 
@@ -558,7 +587,8 @@ export const StepperCadastro: React.FC<StepperCadastroProps> = ({
               '&:hover': { bgcolor: '#45a049' }
             }}
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : 'Salvar'}
+            {loading ? <CircularProgress size={24} color="inherit" /> : 
+              colaboradorEdit ? 'Atualizar' : 'Salvar'}
           </Button>
         )}
       </Box>
