@@ -85,6 +85,7 @@ export const useColaboradores = () => {
     await loadColaboradores();
   };
 
+  // Nova função para exclusão em massa
   const deleteColaboradoresBulk = async (ids: string[]) => {
     if (!db) throw new Error('Firebase não configurado');
     
@@ -99,6 +100,7 @@ export const useColaboradores = () => {
     
     await batch.commit();
     
+    // Recarrega a lista após deletar
     await loadColaboradores();
   };
 

@@ -278,7 +278,7 @@ function App() {
             Cancelar
           </Button>
           <Button onClick={handleConfirmBulkDelete} color="error" variant="contained">
-            Excluir Selecionados
+            Excluir
           </Button>
         </DialogActions>
       </Dialog>
