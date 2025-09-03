@@ -77,8 +77,12 @@ function App() {
     open: boolean;
     colaborador: Colaborador | null;
   }>({ open: false, colaborador: null });
+  const [bulkDeleteDialog, setBulkDeleteDialog] = useState<{
+    open: boolean;
+    ids: string[];
+  }>({ open: false, ids: [] });
   
-  const { colaboradores, loading, reloadColaboradores, deleteColaborador } = useColaboradores();
+  const { colaboradores, loading, reloadColaboradores, deleteColaborador, deleteColaboradoresBulk } = useColaboradores();
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -117,6 +121,10 @@ function App() {
     setDeleteDialog({ open: true, colaborador });
   };
 
+  const handleBulkDelete = (ids: string[]) => {
+    setBulkDeleteDialog({ open: true, ids });
+  };
+
   const handleConfirmDelete = async () => {
     if (deleteDialog.colaborador?.id) {
       try {
@@ -128,6 +136,18 @@ function App() {
       }
     }
     setDeleteDialog({ open: false, colaborador: null });
+  };
+
+  const handleConfirmBulkDelete = async () => {
+    try {
+      await deleteColaboradoresBulk(bulkDeleteDialog.ids);
+      const count = bulkDeleteDialog.ids.length;
+      showSnackbar(`${count} colaborador${count > 1 ? 'es' : ''} excluído${count > 1 ? 's' : ''} com sucesso!`, 'success');
+      await reloadColaboradores();
+    } catch (error) {
+      showSnackbar('Erro ao excluir colaboradores', 'error');
+    }
+    setBulkDeleteDialog({ open: false, ids: [] });
   };
 
   const handleNewClick = () => {
@@ -179,6 +199,7 @@ function App() {
                   onAddClick={handleNewClick}
                   onEditClick={handleEditClick}
                   onDeleteClick={handleDeleteClick}
+                  onBulkDelete={handleBulkDelete}
                 />
               </Box>
             ) : (
@@ -231,21 +252,33 @@ function App() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button 
-            onClick={() => setDeleteDialog({ open: false, colaborador: null })}
-            sx={{ color: '#666' }}
-          >
+          <Button onClick={() => setDeleteDialog({ open: false, colaborador: null })}>
             Cancelar
           </Button>
-          <Button 
-            onClick={handleConfirmDelete}
-            variant="contained"
-            sx={{ 
-              bgcolor: '#d32f2f',
-              '&:hover': { bgcolor: '#c62828' }
-            }}
-          >
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
             Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog
+        open={bulkDeleteDialog.open}
+        onClose={() => setBulkDeleteDialog({ open: false, ids: [] })}
+      >
+        <DialogTitle>Confirmar Exclusão em Massa</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Tem certeza que deseja excluir {bulkDeleteDialog.ids.length} colaborador{bulkDeleteDialog.ids.length > 1 ? 'es' : ''}?
+            Esta ação não pode ser desfeita.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBulkDeleteDialog({ open: false, ids: [] })}>
+            Cancelar
+          </Button>
+          <Button onClick={handleConfirmBulkDelete} color="error" variant="contained">
+            Excluir Selecionados
           </Button>
         </DialogActions>
       </Dialog>

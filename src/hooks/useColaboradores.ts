@@ -8,7 +8,8 @@ import {
   doc,
   query,
   orderBy,
-  Timestamp
+  Timestamp,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Colaborador } from '../types/colaborador';
@@ -84,6 +85,23 @@ export const useColaboradores = () => {
     await loadColaboradores();
   };
 
+  const deleteColaboradoresBulk = async (ids: string[]) => {
+    if (!db) throw new Error('Firebase não configurado');
+    
+    if (ids.length === 0) return;
+
+    const batch = writeBatch(db);
+    
+    ids.forEach(id => {
+      const docRef = doc(db!, 'colaboradores', id);
+      batch.delete(docRef);
+    });
+    
+    await batch.commit();
+    
+    await loadColaboradores();
+  };
+
   useEffect(() => {
     loadColaboradores();
   }, []);
@@ -95,6 +113,7 @@ export const useColaboradores = () => {
     addColaborador,
     updateColaborador,
     deleteColaborador,
+    deleteColaboradoresBulk, // Exporta a nova função
     reloadColaboradores: loadColaboradores
   };
 };
