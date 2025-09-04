@@ -213,7 +213,7 @@ export const ForgotPassword: React.FC = () => {
         {!success && (
           <Box sx={{ mb: 4 }}>
             <Stepper activeStep={0} alternativeLabel>
-              {steps.map((label, index) => (
+              {steps.map((label) => (
                 <Step key={label}>
                   <StepLabel
                     sx={{
