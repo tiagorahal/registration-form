@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import {
   ThemeProvider,
   createTheme,
@@ -21,6 +21,7 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { ForgotPassword } from './pages/ForgotPassword';
+import { NotFound } from './pages/NotFound';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
 import { ListaColaboradores } from './components/colaboradores/ListaColaboradores';
@@ -352,8 +353,9 @@ function App() {
               }
             />
             
-            {/* Redireciona qualquer rota não encontrada */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Página 404 */}
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
