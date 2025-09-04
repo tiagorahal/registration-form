@@ -10,13 +10,16 @@ import {
   CircularProgress,
   InputAdornment,
   IconButton,
-  Divider
+  Divider,
+  Chip
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
   Email,
-  Lock
+  Lock,
+  BusinessCenter,
+  Shield
 } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -64,44 +67,118 @@ export const Login: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: 2
+        background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
+        padding: 2,
+        position: 'relative'
       }}
     >
+      {/* Elemento decorativo de fundo */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          opacity: 0.1,
+          background: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+        }}
+      />
+
       <Paper
-        elevation={3}
+        elevation={12}
         sx={{
           width: '100%',
-          maxWidth: 440,
-          p: 4,
+          maxWidth: 460,
+          p: { xs: 3, sm: 5 },
           borderRadius: 3,
-          bgcolor: 'white'
+          bgcolor: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 4,
+            background: 'linear-gradient(90deg, #4CAF50 0%, #2E7D32 100%)',
+          }
         }}
       >
         {/* Logo/Header */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Box sx={{ textAlign: 'center', mb: 4, mt: 2 }}>
+          {/* Ícone decorativo */}
+          <Box
+            sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(46, 125, 50, 0.1) 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+              border: '2px solid rgba(76, 175, 80, 0.2)'
+            }}
+          >
+            <BusinessCenter 
+              sx={{ 
+                fontSize: 36, 
+                color: '#4CAF50'
+              }} 
+            />
+          </Box>
+
           <Typography
             variant="h4"
             sx={{
               fontWeight: 700,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              mb: 1
+              mb: 1,
+              fontFamily: '"Inter", "Roboto", sans-serif'
             }}
           >
             Bem-vindo de volta!
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          
+          <Typography 
+            variant="body1" 
+            color="text.secondary"
+            sx={{ 
+              mb: 2,
+              fontSize: '1.05rem'
+            }}
+          >
             Entre com suas credenciais para acessar o sistema
           </Typography>
+
+          {/* Badge do sistema */}
+          <Chip
+            icon={<Shield sx={{ fontSize: '18px !important' }} />}
+            label="Sistema de Gestão de RH"
+            sx={{
+              bgcolor: 'rgba(76, 175, 80, 0.1)',
+              color: '#2E7D32',
+              fontWeight: 600,
+              fontSize: '0.85rem'
+            }}
+          />
         </Box>
 
         {/* Formulário */}
         <form onSubmit={handleSubmit}>
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 3,
+                borderRadius: 2
+              }}
+            >
               {error}
             </Alert>
           )}
@@ -116,11 +193,25 @@ export const Login: React.FC = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Email sx={{ color: 'text.secondary', fontSize: 20 }} />
+                  <Email sx={{ color: '#4CAF50', fontSize: 20 }} />
                 </InputAdornment>
               ),
             }}
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                '&:hover fieldset': {
+                  borderColor: '#4CAF50',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#4CAF50',
+                },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#4CAF50',
+              },
+            }}
           />
 
           <TextField
@@ -133,7 +224,7 @@ export const Login: React.FC = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Lock sx={{ color: 'text.secondary', fontSize: 20 }} />
+                  <Lock sx={{ color: '#4CAF50', fontSize: 20 }} />
                 </InputAdornment>
               ),
               endAdornment: (
@@ -142,6 +233,12 @@ export const Login: React.FC = () => {
                     size="small"
                     onClick={() => setShowPassword(!showPassword)}
                     edge="end"
+                    sx={{
+                      color: '#4CAF50',
+                      '&:hover': {
+                        bgcolor: 'rgba(76, 175, 80, 0.08)'
+                      }
+                    }}
                   >
                     {showPassword ? 
                       <VisibilityOff sx={{ fontSize: 20 }} /> : 
@@ -151,7 +248,21 @@ export const Login: React.FC = () => {
                 </InputAdornment>
               ),
             }}
-            sx={{ mb: 3 }}
+            sx={{ 
+              mb: 3,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                '&:hover fieldset': {
+                  borderColor: '#4CAF50',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#4CAF50',
+                },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#4CAF50',
+              },
+            }}
           />
 
           {/* Link Esqueceu senha */}
@@ -161,11 +272,14 @@ export const Login: React.FC = () => {
               to="/forgot-password"
               sx={{
                 fontSize: '0.875rem',
-                color: '#667eea',
+                color: '#4CAF50',
                 textDecoration: 'none',
+                fontWeight: 500,
                 '&:hover': {
-                  textDecoration: 'underline'
-                }
+                  textDecoration: 'underline',
+                  color: '#2E7D32'
+                },
+                transition: 'color 0.2s ease'
               }}
             >
               Esqueceu sua senha?
@@ -181,16 +295,32 @@ export const Login: React.FC = () => {
             sx={{
               py: 1.5,
               mb: 2,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '1rem',
+              boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #5a67d8 0%, #6b4299 100%)',
-              }
+                background: 'linear-gradient(135deg, #45a049 0%, #1B5E20 100%)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 6px 16px rgba(76, 175, 80, 0.4)'
+              },
+              '&:disabled': {
+                background: 'rgba(76, 175, 80, 0.5)',
+                transform: 'none',
+                boxShadow: 'none'
+              },
+              transition: 'all 0.2s ease-in-out'
             }}
           >
             {loading ? (
-              <CircularProgress size={24} color="inherit" />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CircularProgress size={20} color="inherit" />
+                <span>Entrando...</span>
+              </Box>
             ) : (
-              'Entrar'
+              'Entrar no Sistema'
             )}
           </Button>
 
@@ -208,19 +338,41 @@ export const Login: React.FC = () => {
                 component={RouterLink}
                 to="/register"
                 sx={{
-                  color: '#667eea',
-                  fontWeight: 500,
+                  color: '#4CAF50',
+                  fontWeight: 600,
                   textDecoration: 'none',
                   '&:hover': {
-                    textDecoration: 'underline'
-                  }
+                    textDecoration: 'underline',
+                    color: '#2E7D32'
+                  },
+                  transition: 'color 0.2s ease'
                 }}
               >
-                Cadastre-se
+                Cadastre-se aqui
               </Link>
             </Typography>
           </Box>
         </form>
+
+        {/* Informações adicionais */}
+        <Box sx={{ 
+          mt: 4, 
+          pt: 3, 
+          borderTop: '1px solid rgba(0,0,0,0.08)',
+          textAlign: 'center'
+        }}>
+          <Typography 
+            variant="caption" 
+            color="text.secondary"
+            sx={{ 
+              display: 'block',
+              fontSize: '0.8rem',
+              opacity: 0.8
+            }}
+          >
+            Acesso seguro e protegido
+          </Typography>
+        </Box>
       </Paper>
     </Box>
   );
