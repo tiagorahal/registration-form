@@ -21,8 +21,8 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 
 // Initialize Firebase
 let app: any;
-let db: Firestore | null = null;
-let auth: Auth | null = null;
+let db: Firestore | undefined;
+let auth: Auth | undefined;
 
 try {
   app = initializeApp(firebaseConfig);
@@ -33,8 +33,6 @@ try {
 } catch (error) {
   console.error('❌ Error initializing Firebase:', error);
   console.error('Please check your Firebase configuration');
-  db = null;
-  auth = null;
 }
 
 export { db, auth };

@@ -135,7 +135,14 @@ export const ListaColaboradores: React.FC<ListaColaboradoresProps> = ({
   }
 
   return (
-    <Paper sx={{ width: '100%', mb: 2, borderRadius: 3, border: '1px solid #e0e0e0', boxShadow: 'none' }}>
+    <Paper sx={{ 
+      width: '100%', 
+      mb: 2, 
+      borderRadius: 3, 
+      border: '1px solid #e0e0e0', 
+      boxShadow: 'none',
+      overflow: 'hidden'
+    }}>
       {selected.length > 0 && (
         <Toolbar
           sx={{
@@ -158,10 +165,16 @@ export const ListaColaboradores: React.FC<ListaColaboradoresProps> = ({
           <Button
             variant="contained"
             color="error"
+            size="small"
             onClick={handleBulkDelete}
             startIcon={<DeleteIcon />}
+            sx={{ 
+              px: 2,
+              py: 0.75,
+              fontSize: '0.875rem'
+            }}
           >
-            Excluir Selecionados
+            Excluir
           </Button>
         </Toolbar>
       )}

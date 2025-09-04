@@ -32,6 +32,7 @@ export interface Colaborador {
   status: 'ativo' | 'inativo' | 'ferias' | 'afastado';
   
   // Metadata
+  userId?: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
