@@ -1,5 +1,5 @@
 // src/hooks/useDepartamentos.ts
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import type { Firestore } from 'firebase/firestore';
 import {
   collection,
@@ -65,7 +65,11 @@ export function useDepartamentos() {
     }
   }, [coll]);
 
+  // ✅ Guard contra double-mount do StrictMode (evita flicker)
+  const didInit = useRef(false);
   useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
     load();
   }, [load]);
 
