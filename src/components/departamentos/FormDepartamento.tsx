@@ -165,9 +165,6 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
         const colaboradoresAntigos = departamento.colaboradoresIds || [];
         const colaboradoresNovos = formData.colaboradoresIds;
         
-        // Colaboradores removidos
-        const removidos = colaboradoresAntigos.filter(id => !colaboradoresNovos.includes(id));
-        
         // Colaboradores adicionados (podem vir de outros departamentos)
         const adicionados = colaboradoresNovos.filter(id => !colaboradoresAntigos.includes(id));
         
