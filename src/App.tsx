@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import {
   ThemeProvider,
   createTheme,
@@ -15,6 +16,11 @@ import {
   DialogContentText,
   DialogActions
 } from '@mui/material';
+import { AuthProvider } from './contexts/AuthContext';
+import { PrivateRoute } from './components/PrivateRoute';
+import { Login } from './pages/Login';
+import { Register } from './pages/Register';
+import { ForgotPassword } from './pages/ForgotPassword';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
 import { ListaColaboradores } from './components/colaboradores/ListaColaboradores';
@@ -70,7 +76,7 @@ const theme = createTheme({
 
 const drawerWidth = 280;
 
-function App() {
+function Dashboard() {
   const [currentView, setCurrentView] = useState<'list' | 'form'>('list');
   const [colaboradorEdit, setColaboradorEdit] = useState<Colaborador | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -156,85 +162,81 @@ function App() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      
-      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8f9fa' }}>
-        {/* Sidebar */}
-        <Sidebar drawerWidth={drawerWidth} />
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8f9fa' }}>
+      {/* Sidebar */}
+      <Sidebar drawerWidth={drawerWidth} />
 
-        {/* Main Content */}
-        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-          {/* Top Bar */}
-          <TopBar />
+      {/* Main Content */}
+      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Top Bar */}
+        <TopBar />
 
-          {/* Content Area */}
-          <Box sx={{ flexGrow: 1, p: 4 }}>
-            {currentView === 'list' ? (
-              <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-                  <Typography variant="h4" sx={{ flexGrow: 1, fontWeight: 600, color: '#1a1a1a' }}>
-                    Colaboradores
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    onClick={handleNewClick}
-                    sx={{ 
-                      bgcolor: '#4CAF50',
-                      borderRadius: 2,
-                      px: 3,
-                      py: 1.5,
-                      fontSize: '0.95rem',
-                      '&:hover': { bgcolor: '#45a049' },
-                      boxShadow: 'none',
-                    }}
-                  >
-                    Novo Colaborador
-                  </Button>
-                </Box>
+        {/* Content Area */}
+        <Box sx={{ flexGrow: 1, p: 4 }}>
+          {currentView === 'list' ? (
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+                <Typography variant="h4" sx={{ flexGrow: 1, fontWeight: 600, color: '#1a1a1a' }}>
+                  Colaboradores
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={handleNewClick}
+                  sx={{ 
+                    bgcolor: '#4CAF50',
+                    borderRadius: 2,
+                    px: 3,
+                    py: 1.5,
+                    fontSize: '0.95rem',
+                    '&:hover': { bgcolor: '#45a049' },
+                    boxShadow: 'none',
+                  }}
+                >
+                  Novo Colaborador
+                </Button>
+              </Box>
 
-                <ListaColaboradores 
-                  colaboradores={colaboradores}
-                  loading={loading}
-                  onAddClick={handleNewClick}
-                  onEditClick={handleEditClick}
-                  onDeleteClick={handleDeleteClick}
-                  onBulkDelete={handleBulkDelete}
+              <ListaColaboradores 
+                colaboradores={colaboradores}
+                loading={loading}
+                onAddClick={handleNewClick}
+                onEditClick={handleEditClick}
+                onDeleteClick={handleDeleteClick}
+                onBulkDelete={handleBulkDelete}
+              />
+            </Box>
+          ) : (
+            <Box>
+              {/* Breadcrumb */}
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Button 
+                  onClick={() => {
+                    setCurrentView('list');
+                    setColaboradorEdit(null);
+                  }}
+                  sx={{ color: '#666' }}
+                >
+                  ← Voltar para Colaboradores
+                </Button>
+              </Box>
+
+              <Paper sx={{ 
+                bgcolor: 'white', 
+                borderRadius: 3, 
+                p: 4,
+                border: '1px solid #e0e0e0'
+              }}>
+                <StepperCadastro
+                  onClose={() => {
+                    setCurrentView('list');
+                    setColaboradorEdit(null);
+                  }}
+                  onSuccess={handleSuccess}
+                  colaboradorEdit={colaboradorEdit}
                 />
-              </Box>
-            ) : (
-              <Box>
-                {/* Breadcrumb */}
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                  <Button 
-                    onClick={() => {
-                      setCurrentView('list');
-                      setColaboradorEdit(null);
-                    }}
-                    sx={{ color: '#666' }}
-                  >
-                    ← Voltar para Colaboradores
-                  </Button>
-                </Box>
-
-                <Paper sx={{ 
-                  bgcolor: 'white', 
-                  borderRadius: 3, 
-                  p: 4,
-                  border: '1px solid #e0e0e0'
-                }}>
-                  <StepperCadastro
-                    onClose={() => {
-                      setCurrentView('list');
-                      setColaboradorEdit(null);
-                    }}
-                    onSuccess={handleSuccess}
-                    colaboradorEdit={colaboradorEdit}
-                  />
-                </Paper>
-              </Box>
-            )}
-          </Box>
+              </Paper>
+            </Box>
+          )}
         </Box>
       </Box>
 
@@ -252,10 +254,23 @@ function App() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialog({ open: false, colaborador: null })}>
+          <Button 
+            onClick={() => setDeleteDialog({ open: false, colaborador: null })}
+            size="small"
+          >
             Cancelar
           </Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+          <Button 
+            onClick={handleConfirmDelete} 
+            color="error" 
+            variant="contained"
+            size="small"
+            sx={{ 
+              px: 2,
+              py: 0.5,
+              fontSize: '0.875rem'
+            }}
+          >
             Excluir
           </Button>
         </DialogActions>
@@ -274,10 +289,23 @@ function App() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setBulkDeleteDialog({ open: false, ids: [] })}>
+          <Button 
+            onClick={() => setBulkDeleteDialog({ open: false, ids: [] })}
+            size="small"
+          >
             Cancelar
           </Button>
-          <Button onClick={handleConfirmBulkDelete} color="error" variant="contained">
+          <Button 
+            onClick={handleConfirmBulkDelete} 
+            color="error" 
+            variant="contained"
+            size="small"
+            sx={{ 
+              px: 2,
+              py: 0.5,
+              fontSize: '0.875rem'
+            }}
+          >
             Excluir
           </Button>
         </DialogActions>
@@ -298,6 +326,37 @@ function App() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+    </Box>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            {/* Rotas públicas */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            
+            {/* Rotas privadas */}
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            
+            {/* Redireciona qualquer rota não encontrada */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
     </ThemeProvider>
   );
 }

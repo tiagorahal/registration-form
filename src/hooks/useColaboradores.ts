@@ -13,15 +13,23 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Colaborador } from '../types/colaborador';
+import { useAuth } from '../contexts/AuthContext';
 
 export const useColaboradores = () => {
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const loadColaboradores = async () => {
     if (!db) {
       setError('Firebase não configurado');
+      setLoading(false);
+      return;
+    }
+
+    if (!user) {
+      setError('Usuário não autenticado');
       setLoading(false);
       return;
     }
@@ -51,9 +59,11 @@ export const useColaboradores = () => {
 
   const addColaborador = async (colaborador: Omit<Colaborador, 'id'>) => {
     if (!db) throw new Error('Firebase não configurado');
+    if (!user) throw new Error('Usuário não autenticado');
 
     const docRef = await addDoc(collection(db, 'colaboradores'), {
       ...colaborador,
+      userId: user.uid, // Associa o colaborador ao usuário
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now()
     });
@@ -65,6 +75,7 @@ export const useColaboradores = () => {
 
   const updateColaborador = async (id: string, colaborador: Partial<Colaborador>) => {
     if (!db) throw new Error('Firebase não configurado');
+    if (!user) throw new Error('Usuário não autenticado');
 
     const docRef = doc(db, 'colaboradores', id);
     await updateDoc(docRef, {
@@ -78,6 +89,7 @@ export const useColaboradores = () => {
 
   const deleteColaborador = async (id: string) => {
     if (!db) throw new Error('Firebase não configurado');
+    if (!user) throw new Error('Usuário não autenticado');
 
     await deleteDoc(doc(db, 'colaboradores', id));
     
@@ -88,13 +100,14 @@ export const useColaboradores = () => {
   // Nova função para exclusão em massa
   const deleteColaboradoresBulk = async (ids: string[]) => {
     if (!db) throw new Error('Firebase não configurado');
+    if (!user) throw new Error('Usuário não autenticado');
     
     if (ids.length === 0) return;
 
     const batch = writeBatch(db);
     
     ids.forEach(id => {
-      const docRef = doc(db!, 'colaboradores', id);
+      const docRef = doc(db, 'colaboradores', id);
       batch.delete(docRef);
     });
     
@@ -105,8 +118,10 @@ export const useColaboradores = () => {
   };
 
   useEffect(() => {
-    loadColaboradores();
-  }, []);
+    if (user) {
+      loadColaboradores();
+    }
+  }, [user]);
 
   return {
     colaboradores,
@@ -115,7 +130,7 @@ export const useColaboradores = () => {
     addColaborador,
     updateColaborador,
     deleteColaborador,
-    deleteColaboradoresBulk, // Exporta a nova função
+    deleteColaboradoresBulk,
     reloadColaboradores: loadColaboradores
   };
 };
