@@ -8,11 +8,19 @@ import {
   Link,
   Alert,
   CircularProgress,
-  InputAdornment
+  InputAdornment,
+  Chip,
+  Stepper,
+  Step,
+  StepLabel
 } from '@mui/material';
 import {
   Email,
-  ArrowBack
+  ArrowBack,
+  LockReset,
+  Send,
+  CheckCircle,
+  Support
 } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,13 +46,18 @@ export const ForgotPassword: React.FC = () => {
       setLoading(true);
       await resetPassword(email);
       setSuccess(true);
-      setEmail('');
     } catch (error: any) {
       setError(error.message || 'Erro ao enviar email de recuperação');
     } finally {
       setLoading(false);
     }
   };
+
+  const steps = [
+    'Digite seu e-mail',
+    'Verificar caixa de entrada',
+    'Redefinir senha'
+  ];
 
   return (
     <Box
@@ -53,34 +66,62 @@ export const ForgotPassword: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: 2
+        background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
+        padding: 2,
+        position: 'relative'
       }}
     >
+      {/* Elemento decorativo de fundo */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          opacity: 0.1,
+          background: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+        }}
+      />
+
       <Paper
-        elevation={3}
+        elevation={12}
         sx={{
           width: '100%',
-          maxWidth: 440,
-          p: 4,
+          maxWidth: 500,
+          p: { xs: 3, sm: 5 },
           borderRadius: 3,
-          bgcolor: 'white'
+          bgcolor: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 4,
+            background: 'linear-gradient(90deg, #4CAF50 0%, #2E7D32 100%)',
+          }
         }}
       >
         {/* Voltar para login */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 3, mt: 1 }}>
           <Link
             component={RouterLink}
             to="/login"
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
-              color: '#667eea',
+              color: '#4CAF50',
               textDecoration: 'none',
               fontSize: '0.875rem',
+              fontWeight: 500,
               '&:hover': {
-                textDecoration: 'underline'
-              }
+                textDecoration: 'underline',
+                color: '#2E7D32'
+              },
+              transition: 'color 0.2s ease'
             }}
           >
             <ArrowBack sx={{ fontSize: 18, mr: 0.5 }} />
@@ -90,82 +131,276 @@ export const ForgotPassword: React.FC = () => {
 
         {/* Header */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
+          {/* Ícone decorativo */}
+          <Box
+            sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: success 
+                ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(46, 125, 50, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(46, 125, 50, 0.1) 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+              border: '2px solid rgba(76, 175, 80, 0.2)',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            {success ? (
+              <CheckCircle 
+                sx={{ 
+                  fontSize: 36, 
+                  color: '#4CAF50'
+                }} 
+              />
+            ) : (
+              <LockReset 
+                sx={{ 
+                  fontSize: 36, 
+                  color: '#4CAF50'
+                }} 
+              />
+            )}
+          </Box>
+
           <Typography
             variant="h4"
             sx={{
               fontWeight: 700,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              mb: 1
+              mb: 1,
+              fontFamily: '"Inter", "Roboto", sans-serif'
             }}
           >
-            Recuperar senha
+            {success ? 'Email Enviado!' : 'Recuperar Senha'}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Digite seu e-mail para receber as instruções de recuperação
+          
+          <Typography 
+            variant="body1" 
+            color="text.secondary"
+            sx={{ 
+              mb: 2,
+              fontSize: '1.05rem'
+            }}
+          >
+            {success 
+              ? 'Verifique sua caixa de entrada e siga as instruções para redefinir sua senha'
+              : 'Digite seu e-mail para receber as instruções de recuperação'
+            }
           </Typography>
+
+          {/* Badge do sistema */}
+          <Chip
+            icon={<Support sx={{ fontSize: '18px !important' }} />}
+            label={success ? "Suporte Enviado" : "Recuperação Segura"}
+            sx={{
+              bgcolor: success 
+                ? 'rgba(76, 175, 80, 0.15)' 
+                : 'rgba(76, 175, 80, 0.1)',
+              color: '#2E7D32',
+              fontWeight: 600,
+              fontSize: '0.85rem'
+            }}
+          />
         </Box>
 
+        {/* Stepper de progresso */}
+        {!success && (
+          <Box sx={{ mb: 4 }}>
+            <Stepper activeStep={0} alternativeLabel>
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel
+                    sx={{
+                      '& .MuiStepLabel-label': {
+                        fontSize: '0.75rem',
+                        color: 'text.secondary'
+                      },
+                      '& .MuiStepIcon-root': {
+                        color: 'rgba(76, 175, 80, 0.3)',
+                        '&.Mui-active': {
+                          color: '#4CAF50',
+                        },
+                      },
+                    }}
+                  >
+                    {label}
+                  </StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Box>
+        )}
+
         {/* Formulário */}
-        <form onSubmit={handleSubmit}>
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
+        {!success && (
+          <form onSubmit={handleSubmit}>
+            {error && (
+              <Alert 
+                severity="error" 
+                sx={{ 
+                  mb: 3,
+                  borderRadius: 2
+                }}
+              >
+                {error}
+              </Alert>
+            )}
+
+            <TextField
+              fullWidth
+              label="E-mail"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError('');
+              }}
+              margin="normal"
+              placeholder="seu.email@exemplo.com"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email sx={{ color: '#4CAF50', fontSize: 20 }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ 
+                mb: 3,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  '&:hover fieldset': {
+                    borderColor: '#4CAF50',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#4CAF50',
+                  },
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: '#4CAF50',
+                },
+              }}
+            />
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              size="large"
+              disabled={loading}
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Send />}
+              sx={{
+                py: 1.5,
+                mb: 2,
+                background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '1rem',
+                boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #45a049 0%, #1B5E20 100%)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 6px 16px rgba(76, 175, 80, 0.4)'
+                },
+                '&:disabled': {
+                  background: 'rgba(76, 175, 80, 0.5)',
+                  transform: 'none',
+                  boxShadow: 'none'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              {loading ? 'Enviando...' : 'Enviar Email de Recuperação'}
+            </Button>
+          </form>
+        )}
+
+        {/* Mensagem de sucesso */}
+        {success && (
+          <Box sx={{ textAlign: 'center' }}>
+            <Alert 
+              severity="success" 
+              sx={{ 
+                mb: 3,
+                borderRadius: 2,
+                '& .MuiAlert-icon': {
+                  color: '#4CAF50'
+                }
+              }}
+            >
+              Email de recuperação enviado com sucesso!
             </Alert>
-          )}
 
-          {success && (
-            <Alert severity="success" sx={{ mb: 3 }}>
-              Email de recuperação enviado! Verifique sua caixa de entrada.
-            </Alert>
-          )}
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ 
+                mb: 3,
+                lineHeight: 1.6
+              }}
+            >
+              Se você não receber o email em alguns minutos, verifique sua pasta de spam 
+              ou tente novamente com outro endereço de email.
+            </Typography>
 
-          <TextField
-            fullWidth
-            label="E-mail"
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError('');
-              setSuccess(false);
-            }}
-            margin="normal"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Email sx={{ color: 'text.secondary', fontSize: 20 }} />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ mb: 3 }}
-          />
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={() => {
+                setSuccess(false);
+                setEmail('');
+                setError('');
+              }}
+              sx={{
+                borderColor: '#4CAF50',
+                color: '#4CAF50',
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600,
+                px: 4,
+                py: 1.5,
+                '&:hover': {
+                  borderColor: '#2E7D32',
+                  bgcolor: 'rgba(76, 175, 80, 0.04)',
+                  color: '#2E7D32'
+                },
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Tentar Outro Email
+            </Button>
+          </Box>
+        )}
 
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={loading || success}
-            sx={{
-              py: 1.5,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #5a67d8 0%, #6b4299 100%)',
-              }
+        {/* Informações de ajuda */}
+        <Box sx={{ 
+          mt: 4, 
+          pt: 3, 
+          borderTop: '1px solid rgba(0,0,0,0.08)',
+          textAlign: 'center'
+        }}>
+          <Typography 
+            variant="caption" 
+            color="text.secondary"
+            sx={{ 
+              display: 'block',
+              fontSize: '0.8rem',
+              opacity: 0.8,
+              lineHeight: 1.4
             }}
           >
-            {loading ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : success ? (
-              'Email enviado!'
-            ) : (
-              'Enviar email de recuperação'
-            )}
-          </Button>
-        </form>
+            {success 
+              ? 'O link de recuperação expira em 24 horas por segurança'
+              : 'Problemas para acessar? Entre em contato com o suporte'
+            }
+          </Typography>
+        </Box>
       </Paper>
     </Box>
   );
