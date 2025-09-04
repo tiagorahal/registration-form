@@ -1,5 +1,6 @@
 // src/hooks/useDepartamentos.ts
 import { useEffect, useState, useCallback } from 'react';
+import type { Firestore } from 'firebase/firestore';
 import {
   collection,
   addDoc,
@@ -19,15 +20,24 @@ type NewDepartamento = Omit<Departamento, 'id' | 'createdAt' | 'updatedAt'> & {
   id?: string;
 };
 
+// Garante Firestore definido e “converte” o tipo para Firestore (não undefined)
+function getDb(): Firestore {
+  if (!db) {
+    throw new Error('Firebase Firestore não configurado. Verifique src/config/firebase.ts e variáveis VITE_FIREBASE_*');
+  }
+  return db as Firestore;
+}
+
 export function useDepartamentos() {
   const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const coll = collection(db, 'departamentos');
+  const fdb = getDb();
+  const coll = collection(fdb, 'departamentos');
 
   const mapSnapToDepartamento = (d: any): Departamento => {
-    const data = d.data ? d.data() : d; // aceita tanto DocSnap quanto objeto puro
+    const data = d.data ? d.data() : d;
     return {
       id: data.id ?? d.id,
       nome: data.nome ?? '',
@@ -53,14 +63,13 @@ export function useDepartamentos() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [coll]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   const addDepartamento = async (data: NewDepartamento) => {
-    // grava e garante field id
     const payload = {
       nome: data.nome,
       descricao: data.descricao ?? '',
@@ -73,14 +82,14 @@ export function useDepartamentos() {
 
     // 1) cria doc (gera id)
     const docRef = await addDoc(coll, payload);
-    // 2) persiste o próprio id como campo (útil para listagens)
-    await setDoc(doc(db, 'departamentos', docRef.id), { id: docRef.id }, { merge: true });
+    // 2) grava o próprio id
+    await setDoc(doc(fdb, 'departamentos', docRef.id), { id: docRef.id }, { merge: true });
 
     return docRef.id;
   };
 
   const updateDepartamento = async (id: string, data: Partial<NewDepartamento>) => {
-    const ref = doc(db, 'departamentos', id);
+    const ref = doc(fdb, 'departamentos', id);
     const patch: any = {
       updatedAt: serverTimestamp(),
     };
@@ -94,26 +103,20 @@ export function useDepartamentos() {
   };
 
   const deleteDepartamento = async (id: string) => {
-    // opcional: validação para impedir exclusão com colaboradores
-    await updateDoc(doc(db, 'departamentos', id), {
-      // se quiser “soft delete”, adicione um flag:
+    // Exemplo de soft delete (mantenho para referência)
+    await updateDoc(doc(fdb, 'departamentos', id), {
       deletedAt: serverTimestamp(),
     });
-    // ou, se realmente quiser deletar:
-    // await deleteDoc(doc(db, 'departamentos', id));
+    // Se quiser apagar de verdade, use deleteDoc aqui.
   };
 
-  /**
-   * Transfere um colaborador de um departamento origem -> destino.
-   * Garante consistência com transação.
-   */
   const transferColaborador = async (colabId: string, deptoOrigemId: string, deptoDestinoId: string) => {
     if (!colabId || !deptoOrigemId || !deptoDestinoId || deptoOrigemId === deptoDestinoId) return;
 
-    const origemRef = doc(db, 'departamentos', deptoOrigemId);
-    const destinoRef = doc(db, 'departamentos', deptoDestinoId);
+    const origemRef = doc(fdb, 'departamentos', deptoOrigemId);
+    const destinoRef = doc(fdb, 'departamentos', deptoDestinoId);
 
-    await runTransaction(db, async (tx) => {
+    await runTransaction(fdb, async (tx) => {
       const origemSnap = await tx.get(origemRef);
       const destinoSnap = await tx.get(destinoRef);
 
@@ -127,9 +130,7 @@ export function useDepartamentos() {
       const origemList = Array.isArray(origem.colaboradoresIds) ? origem.colaboradoresIds : [];
       const destinoList = Array.isArray(destino.colaboradoresIds) ? destino.colaboradoresIds : [];
 
-      // remove do origem
       const novaOrigem = origemList.filter((id) => id !== colabId);
-      // adiciona no destino (sem duplicar)
       const novoDestino = destinoList.includes(colabId) ? destinoList : [...destinoList, colabId];
 
       tx.update(origemRef, { colaboradoresIds: novaOrigem, updatedAt: serverTimestamp() });
