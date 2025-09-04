@@ -50,7 +50,7 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
   departamentos
 }) => {
   const { addDepartamento, updateDepartamento, transferColaborador } = useDepartamentos();
-  
+
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
@@ -58,7 +58,7 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
     gestorResponsavelId: '',
     colaboradoresIds: [] as string[]
   });
-  
+
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
   const [colaboradorToAdd, setColaboradorToAdd] = useState<Colaborador | null>(null);
@@ -86,68 +86,62 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
   }, [departamento, open]);
 
   // Filtrar gestores disponíveis
-  const gestoresDisponiveis = colaboradores.filter(c => c.nivelHierarquico === 'gestor');
-  
+  const gestoresDisponiveis = colaboradores.filter((c) => c.nivelHierarquico === 'gestor');
+
   // Obter colaboradores selecionados
-  const colaboradoresSelecionados = colaboradores.filter(c => 
-    c.id && formData.colaboradoresIds.includes(c.id)
+  const colaboradoresSelecionados = colaboradores.filter(
+    (c) => c.id && formData.colaboradoresIds.includes(c.id)
   );
 
-  // Colaboradores disponíveis para adicionar (não estão em nenhum departamento ou estão em outro)
+  // Colaboradores disponíveis para adicionar
   const colaboradoresDisponiveis: Colaborador[] = colaboradores.filter((c: Colaborador) => {
-    // Verificar se o colaborador tem ID
+    // Precisa ter ID
     if (!c.id) return false;
-    
+
     // Se já está selecionado, não mostrar
     if (formData.colaboradoresIds.includes(c.id)) return false;
-    
+
     // Se estamos editando, permitir colaboradores de outros departamentos
-    if (departamento) {
-      return true;
-    }
-    
-    // Se criando novo, mostrar apenas colaboradores sem departamento
-    const emOutroDepartamento = departamentos.some(d => 
-      d.id !== departamento?.id && d.colaboradoresIds.includes(c.id)
+    if (departamento) return true;
+
+    // Se criando novo, mostrar apenas sem departamento
+    const emOutroDepartamento = departamentos.some(
+      (d) => d.colaboradoresIds.includes(c.id!)
     );
-    
+
     return !emOutroDepartamento;
   });
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setErrors((prev: any) => ({ ...prev, [field]: undefined }));
   };
 
   const handleAddColaborador = () => {
-    if (colaboradorToAdd && !formData.colaboradoresIds.includes(colaboradorToAdd.id!)) {
-      handleInputChange('colaboradoresIds', [...formData.colaboradoresIds, colaboradorToAdd.id!]);
+    if (colaboradorToAdd?.id && !formData.colaboradoresIds.includes(colaboradorToAdd.id)) {
+      handleInputChange('colaboradoresIds', [...formData.colaboradoresIds, colaboradorToAdd.id]);
       setColaboradorToAdd(null);
     }
   };
 
   const handleRemoveColaborador = (colaboradorId: string) => {
     handleInputChange(
-      'colaboradoresIds', 
-      formData.colaboradoresIds.filter(id => id !== colaboradorId)
+      'colaboradoresIds',
+      formData.colaboradoresIds.filter((id) => id !== colaboradorId)
     );
   };
 
   const validate = () => {
     const newErrors: any = {};
-    
-    if (!formData.nome) {
-      newErrors.nome = 'Nome é obrigatório';
-    }
-    
-    if (!formData.gestorResponsavelId) {
-      newErrors.gestorResponsavelId = 'Gestor responsável é obrigatório';
-    }
-    
+
+    if (!formData.nome) newErrors.nome = 'Nome é obrigatório';
+
+    if (!formData.gestorResponsavelId) newErrors.gestorResponsavelId = 'Gestor responsável é obrigatório';
+
     if (formData.orcamento && isNaN(Number(formData.orcamento))) {
       newErrors.orcamento = 'Orçamento deve ser um número';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -168,38 +162,28 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
       if (departamento?.id) {
         // Atualizar departamento
         await updateDepartamento(departamento.id, data);
-        
+
         // Transferir colaboradores se necessário
         const colaboradoresAntigos = departamento.colaboradoresIds || [];
         const colaboradoresNovos = formData.colaboradoresIds;
-        
-        // Colaboradores removidos
-        const removidos = colaboradoresAntigos.filter(id => !colaboradoresNovos.includes(id));
-        
+
         // Colaboradores adicionados (podem vir de outros departamentos)
-        const adicionados = colaboradoresNovos.filter(id => !colaboradoresAntigos.includes(id));
-        
-        // Para cada adicionado, verificar se está em outro departamento e transferir
+        const adicionados = colaboradoresNovos.filter((id) => !colaboradoresAntigos.includes(id));
+
         for (const colabId of adicionados) {
-          const deptoOrigem = departamentos.find(d => 
-            d.id !== departamento.id && d.colaboradoresIds.includes(colabId)
+          const deptoOrigem = departamentos.find(
+            (d) => d.id !== departamento.id && d.colaboradoresIds.includes(colabId)
           );
-          if (deptoOrigem) {
-            await transferColaborador(colabId, deptoOrigem.id!, departamento.id);
+          if (deptoOrigem?.id) {
+            await transferColaborador(colabId, deptoOrigem.id, departamento.id);
           }
         }
       } else {
         // Criar novo departamento
         await addDepartamento(data);
-        
-        // Transferir colaboradores de outros departamentos se necessário
-        for (const colabId of formData.colaboradoresIds) {
-          const deptoOrigem = departamentos.find(d => d.colaboradoresIds.includes(colabId));
-          if (deptoOrigem) {
-            // Aqui precisaríamos do ID do novo departamento
-            // Por simplicidade, vamos assumir que os colaboradores já foram adicionados
-          }
-        }
+
+        // Observação: se o addDepartamento retorna o novo ID, aqui seria o ponto para
+        // transferir; como não temos, assumimos que os colaboradores já foram vinculados.
       }
 
       onSuccess();
@@ -223,6 +207,15 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
     setColaboradorToAdd(null);
     onClose();
   };
+
+  const getInitials = (name: string) =>
+    name
+      .split(' ')
+      .filter(Boolean)
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
@@ -278,17 +271,16 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
                   <MoneyIcon fontSize="small" />
                   R$
                 </InputAdornment>
-              ),
+              )
             }}
           />
 
-          <Autocomplete
+          {/* Gestor Responsável */}
+          <Autocomplete<Colaborador>
             options={gestoresDisponiveis}
             getOptionLabel={(option) => `${option.nome} - ${option.cargo}`}
-            value={gestoresDisponiveis.find(g => g.id === formData.gestorResponsavelId) || null}
-            onChange={(_, newValue) => 
-              handleInputChange('gestorResponsavelId', newValue?.id || '')
-            }
+            value={gestoresDisponiveis.find((g) => g.id === formData.gestorResponsavelId) || null}
+            onChange={(_, newValue) => handleInputChange('gestorResponsavelId', newValue?.id || '')}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -321,7 +313,7 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
 
           {/* Adicionar colaborador */}
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Autocomplete
+            <Autocomplete<Colaborador>
               fullWidth
               options={colaboradoresDisponiveis}
               getOptionLabel={(option) => option.nome}
@@ -336,9 +328,9 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
                 />
               )}
               renderOption={(props, option) => {
-                const deptoAtual = departamentos.find(d => 
-                  d.colaboradoresIds.includes(option.id!)
-                );
+                const deptoAtual =
+                  option.id &&
+                  departamentos.find((d) => d.colaboradoresIds.includes(option.id as string));
                 return (
                   <Box component="li" {...props}>
                     <Box sx={{ width: '100%' }}>
@@ -354,7 +346,7 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
             <Button
               variant="contained"
               onClick={handleAddColaborador}
-              disabled={!colaboradorToAdd}
+              disabled={!colaboradorToAdd?.id}
               startIcon={<AddIcon />}
               sx={{ minWidth: 120 }}
             >
@@ -366,17 +358,17 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
           {colaboradoresSelecionados.length > 0 ? (
             <List sx={{ bgcolor: 'background.paper', borderRadius: 1, border: '1px solid #e0e0e0' }}>
               {colaboradoresSelecionados.map((colab, index) => {
-                const deptoOriginal = departamentos.find(d => 
-                  d.id !== departamento?.id && d.colaboradoresIds.includes(colab.id!)
-                );
+                const colabId = colab.id ?? ''; // guard
+                const deptoOriginal =
+                  colabId &&
+                  departamentos.find((d) => d.id !== (departamento?.id ?? '') && d.colaboradoresIds.includes(colabId));
+
                 return (
-                  <React.Fragment key={colab.id}>
+                  <React.Fragment key={colabId || colab.nome}>
                     {index > 0 && <Divider />}
                     <ListItem>
                       <ListItemAvatar>
-                        <Avatar>
-                          {colab.nome.split(' ').map(n => n[0]).slice(0, 2).join('')}
-                        </Avatar>
+                        <Avatar>{getInitials(colab.nome)}</Avatar>
                       </ListItemAvatar>
                       <ListItemText
                         primary={colab.nome}
@@ -397,7 +389,7 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
                       <ListItemSecondaryAction>
                         <IconButton
                           edge="end"
-                          onClick={() => handleRemoveColaborador(colab.id!)}
+                          onClick={() => colabId && handleRemoveColaborador(colabId)}
                           size="small"
                         >
                           <DeleteIcon />
@@ -415,9 +407,7 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
           )}
 
           {colaboradoresSelecionados.length > 0 && (
-            <Alert severity="info">
-              {colaboradoresSelecionados.length} colaborador(es) no departamento
-            </Alert>
+            <Alert severity="info">{colaboradoresSelecionados.length} colaborador(es) no departamento</Alert>
           )}
         </Box>
       </DialogContent>
@@ -426,11 +416,7 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
         <Button onClick={handleClose} disabled={loading}>
           Cancelar
         </Button>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={loading}
-        >
+        <Button variant="contained" onClick={handleSubmit} disabled={loading}>
           {loading ? 'Salvando...' : departamento ? 'Atualizar' : 'Criar'}
         </Button>
       </DialogActions>
