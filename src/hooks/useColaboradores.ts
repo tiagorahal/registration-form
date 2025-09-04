@@ -77,7 +77,7 @@ export const useColaboradores = () => {
     if (!db) throw new Error('Firebase não configurado');
     if (!user) throw new Error('Usuário não autenticado');
 
-    const docRef = doc(db, 'colaboradores', id);
+    const docRef = doc(db!, 'colaboradores', id);
     await updateDoc(docRef, {
       ...colaborador,
       updatedAt: Timestamp.now()
@@ -107,7 +107,7 @@ export const useColaboradores = () => {
     const batch = writeBatch(db);
     
     ids.forEach(id => {
-      const docRef = doc(db, 'colaboradores', id);
+      const docRef = doc(db!, 'colaboradores', id);
       batch.delete(docRef);
     });
     
