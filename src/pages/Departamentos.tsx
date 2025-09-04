@@ -9,8 +9,7 @@ import {
   DialogContentText,
   DialogActions,
   Snackbar,
-  Alert,
-  Paper
+  Alert
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import { ListaDepartamentos } from '../components/departamentos/ListaDepartamentos';
