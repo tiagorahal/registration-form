@@ -90,20 +90,28 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
   
   // Obter colaboradores selecionados
   const colaboradoresSelecionados = colaboradores.filter(c => 
-    formData.colaboradoresIds.includes(c.id!)
+    c.id && formData.colaboradoresIds.includes(c.id)
   );
 
   // Colaboradores disponíveis para adicionar (não estão em nenhum departamento ou estão em outro)
-  const colaboradoresDisponiveis = colaboradores.filter(c => {
+  const colaboradoresDisponiveis: Colaborador[] = colaboradores.filter((c: Colaborador) => {
+    // Verificar se o colaborador tem ID
+    if (!c.id) return false;
+    
+    // Se já está selecionado, não mostrar
+    if (formData.colaboradoresIds.includes(c.id)) return false;
+    
     // Se estamos editando, permitir colaboradores de outros departamentos
     if (departamento) {
-      return !formData.colaboradoresIds.includes(c.id!);
+      return true;
     }
+    
     // Se criando novo, mostrar apenas colaboradores sem departamento
     const emOutroDepartamento = departamentos.some(d => 
-      d.id !== departamento?.id && d.colaboradoresIds.includes(c.id!)
+      d.id !== departamento?.id && d.colaboradoresIds.includes(c.id)
     );
-    return !emOutroDepartamento && !formData.colaboradoresIds.includes(c.id!);
+    
+    return !emOutroDepartamento;
   });
 
   const handleInputChange = (field: string, value: any) => {
@@ -164,6 +172,9 @@ export const FormDepartamento: React.FC<FormDepartamentoProps> = ({
         // Transferir colaboradores se necessário
         const colaboradoresAntigos = departamento.colaboradoresIds || [];
         const colaboradoresNovos = formData.colaboradoresIds;
+        
+        // Colaboradores removidos
+        const removidos = colaboradoresAntigos.filter(id => !colaboradoresNovos.includes(id));
         
         // Colaboradores adicionados (podem vir de outros departamentos)
         const adicionados = colaboradoresNovos.filter(id => !colaboradoresAntigos.includes(id));
