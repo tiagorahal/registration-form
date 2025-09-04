@@ -1,6 +1,6 @@
-# Sistema de Gestão de Colaboradores
+# Sistema de Gestão de Recursos Humanos
 
-Sistema completo de gestão de recursos humanos com cadastro, edição e exclusão de colaboradores, desenvolvido com React, TypeScript, Material-UI e Firebase.
+Sistema completo de gestão de RH com cadastro de colaboradores, gestão de departamentos, autenticação e controle de permissões, desenvolvido com React, TypeScript, Material-UI e Firebase.
 
 ![React](https://img.shields.io/badge/React-18.2.0-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.2-blue)
@@ -14,72 +14,105 @@ Sistema completo de gestão de recursos humanos com cadastro, edição e exclus�
 - [Funcionalidades](#-funcionalidades)
 - [Tecnologias](#-tecnologias)
 - [Instalação](#-instalação)
+- [Configuração](#-configuração)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
 - [Uso](#-uso)
 - [Deploy](#-deploy)
 
 [**Demo ao vivo**](https://registration-form-omega-seven.vercel.app/)
 
+## 🎯 Visão Geral
+
+Sistema profissional de gestão de recursos humanos com funcionalidades avançadas de cadastro, controle de departamentos e permissões hierárquicas. Desenvolvido como solução completa para o desafio técnico da Flugo.
+
 ## ✨ Funcionalidades
 
-### Implementadas ✅
+### Autenticação e Segurança
+- ✅ **Autenticação completa com Firebase Auth (JWT)**
+- ✅ **Login com email e senha**
+- ✅ **Registro de novos usuários**
+- ✅ **Recuperação de senha por email**
+- ✅ **Proteção de rotas privadas**
+- ✅ **Logout seguro com limpeza de sessão**
+- ✅ **Isolamento de dados por usuário**
+- ✅ **Context API para estado global**
 
-#### Cadastro Completo
-- **Stepper de 4 etapas** com validação progressiva:
-  1. **Dados Pessoais**: Nome, email, CPF, telefone, data de nascimento
-  2. **Informações Profissionais**: Cargo, admissão, nível hierárquico, gestor, salário
-  3. **Endereço**: CEP, logradouro, número, bairro, cidade, estado
-  4. **Revisão**: Conferência antes de salvar
-
-#### Gestão de Colaboradores
-- ✅ **Listagem completa** com avatares personalizados
-- ✅ **Edição de dados** com formulário pré-preenchido
+### Gestão de Colaboradores
+- ✅ **Cadastro em 4 etapas** com validação progressiva
+  - Dados Pessoais (nome, email, CPF, telefone, nascimento)
+  - Informações Profissionais (cargo, admissão, nível, gestor, salário)
+  - Endereço completo (CEP, logradouro, número, bairro, cidade, estado)
+  - Revisão e confirmação dos dados
+- ✅ **Edição completa** com formulário pré-preenchido
 - ✅ **Exclusão individual** com confirmação
-- ✅ **Atualização automática** após operações
+- ✅ **Exclusão em massa** com seleção múltipla
+- ✅ **Validação de idade mínima** (18 anos)
+- ✅ **Autocomplete inteligente** para seleção de gestor
+- ✅ **Avatares personalizados** com emojis
 
-#### Funcionalidades Profissionais
-- ✅ **Níveis hierárquicos**: Júnior, Pleno, Sênior, Gestor
-- ✅ **Vínculo com gestor** via autocomplete inteligente
-- ✅ **Departamentos**: Design, TI, Marketing, Produto, Vendas, RH, Financeiro, Operações
-- ✅ **Status**: Ativo, Inativo, Férias, Afastado
+### Gestão de Departamentos
+- ✅ **CRUD completo de departamentos**
+- ✅ **Atribuição de gestor responsável** (apenas gestores)
+- ✅ **Gerenciamento de colaboradores por departamento**
+- ✅ **Transferência automática entre departamentos**
+- ✅ **Orçamento por departamento**
+- ✅ **Validação de integridade** (colaborador sempre em um departamento)
+- ✅ **Exclusão protegida** (não permite excluir com colaboradores)
+- ✅ **Avatar groups** para visualização da equipe
 
-#### Interface & UX
-- ✅ **Design responsivo** com Material-UI
+### Sistema de Permissões
+- ✅ **4 níveis hierárquicos**: Júnior, Pleno, Sênior, Gestor
+- ✅ **Apenas gestores** podem ser responsáveis por departamentos
+- ✅ **Controle de transferências** entre departamentos
+- ✅ **Validações de integridade de dados**
+- ✅ **Indicadores visuais** de permissões
+
+### Busca e Filtros Avançados
+- ✅ **Busca global** por nome, email, cargo ou CPF
+- ✅ **Filtro por departamento**
+- ✅ **Filtro por nível hierárquico**
+- ✅ **Filtro por status** (ativo, inativo, férias, afastado)
+- ✅ **Filtro por faixa salarial**
+- ✅ **Interface expansível** para economizar espaço
+- ✅ **Contador de resultados filtrados**
+- ✅ **Limpar todos os filtros** com um clique
+
+### Interface & UX
+- ✅ **Design moderno e responsivo** com Material-UI
+- ✅ **Página 404 customizada** com gradientes
+- ✅ **Sidebar navegável** com indicador de página ativa
+- ✅ **TopBar** com informações do usuário
 - ✅ **Feedback visual** com snackbars
 - ✅ **Loading states** durante operações
 - ✅ **Validações em tempo real**
-- ✅ **Dialog de confirmação** para exclusões
-
-### Em Desenvolvimento 🚧
-- [ ] Autenticação com Firebase Auth (JWT)
-- [ ] Exclusão em massa
-- [ ] Filtros de busca avançados
-- [ ] Gestão de departamentos
-- [ ] Página 404 customizada
-- [ ] Sistema de permissões
+- ✅ **Dialogs de confirmação** para ações críticas
+- ✅ **Tema consistente** com cores e espaçamentos
 
 ## 🛠 Tecnologias
 
 ### Core
 - **React 18.2** - Biblioteca UI
 - **TypeScript 5.0** - Type safety
-- **Vite 5.0** - Build tool
+- **Vite 5.0** - Build tool ultrarrápida
+- **React Router DOM 6** - Roteamento SPA
 
 ### UI/UX
-- **Material-UI 5.14** - Componentes
-- **Material Icons** - Ícones
-- **Emotion** - Styled components
+- **Material-UI 5.14** - Componentes React
+- **Material Icons** - Ícones consistentes
+- **Emotion** - CSS-in-JS para estilos
 
 ### Backend
-- **Firebase Firestore** - Database NoSQL
-- **Firebase Auth** - Autenticação (planejado)
+- **Firebase Firestore** - Database NoSQL em tempo real
+- **Firebase Auth** - Autenticação segura
+- **Firebase Batch Operations** - Operações em massa otimizadas
 
 ## 📦 Instalação
 
 ### Pré-requisitos
-- Node.js 18+
-- npm ou yarn
-- Conta Firebase
+- Node.js 18+ instalado
+- NPM ou Yarn
+- Conta no Firebase Console
+- Git
 
 ### Passo a passo
 
@@ -94,92 +127,182 @@ cd registration-form
 npm install
 ```
 
-3. **Configure o Firebase**
-
-Crie um projeto no [Firebase Console](https://console.firebase.google.com) e ative o Firestore.
-
-4. **Configure as variáveis de ambiente**
-
-Crie um arquivo `.env` na raiz:
+3. **Configure as variáveis de ambiente**
+Crie um arquivo `.env` na raiz do projeto:
 ```env
-VITE_FIREBASE_API_KEY=sua_api_key
-VITE_FIREBASE_AUTH_DOMAIN=seu_auth_domain
-VITE_FIREBASE_PROJECT_ID=seu_project_id
-VITE_FIREBASE_STORAGE_BUCKET=seu_storage_bucket
+VITE_FIREBASE_API_KEY=sua_api_key_aqui
+VITE_FIREBASE_AUTH_DOMAIN=seu_projeto.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=seu_projeto_id
+VITE_FIREBASE_STORAGE_BUCKET=seu_projeto.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=seu_sender_id
 VITE_FIREBASE_APP_ID=seu_app_id
 ```
 
-5. **Execute o projeto**
+4. **Execute o projeto**
 ```bash
 npm run dev
 ```
 
 Acesse: [http://localhost:5173](http://localhost:5173)
 
+## ⚙️ Configuração
+
+### Firebase Console
+
+1. **Criar Projeto**
+   - Acesse [Firebase Console](https://console.firebase.google.com)
+   - Crie um novo projeto ou selecione existente
+
+2. **Ativar Authentication**
+   - Menu lateral > Authentication > Get Started
+   - Sign-in method > Email/Password > Enable
+
+3. **Configurar Firestore**
+   - Menu lateral > Firestore Database > Create Database
+   - Start in production mode
+   - Escolha localização mais próxima
+
+4. **Criar Collections**
+   - Collection `colaboradores`
+   - Collection `departamentos`
+
+5. **Configurar Regras de Segurança**
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Colaboradores
+    match /colaboradores/{document=**} {
+      allow read: if request.auth != null 
+        && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+    
+    // Departamentos
+    match /departamentos/{document=**} {
+      allow read: if request.auth != null 
+        && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+  }
+}
+```
+
 ## 📁 Estrutura do Projeto
 
 ```
-├── src/
-│   ├── components/
-│   │   ├── layout/
-│   │   │   ├── Sidebar.tsx        # Barra lateral
-│   │   │   └── TopBar.tsx         # Barra superior
-│   │   └── colaboradores/
-│   │       ├── StepperCadastro.tsx # Form multi-step
-│   │       └── ListaColaboradores.tsx # Tabela
-│   ├── config/
-│   │   └── firebase.ts            # Config Firebase
-│   ├── hooks/
-│   │   └── useColaboradores.ts    # Hook principal
-│   ├── types/
-│   │   └── colaborador.ts         # Tipos TypeScript
-│   ├── App.tsx                    # Componente raiz
-│   └── main.tsx                   # Entry point
-├── .env.example
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── README.md
+src/
+├── components/           # Componentes reutilizáveis
+│   ├── colaboradores/   # Componentes de colaboradores
+│   ├── departamentos/   # Componentes de departamentos
+│   ├── layout/         # Layout (Sidebar, TopBar)
+│   └── PrivateRoute.tsx # Proteção de rotas
+├── config/             # Configurações
+│   └── firebase.ts     # Config Firebase
+├── contexts/           # Contexts do React
+│   └── AuthContext.tsx # Contexto de autenticação
+├── hooks/              # Custom hooks
+│   ├── useColaboradores.ts
+│   └── useDepartamentos.ts
+├── pages/              # Páginas da aplicação
+│   ├── Login.tsx
+│   ├── Register.tsx
+│   ├── ForgotPassword.tsx
+│   ├── NotFound.tsx
+│   └── Departamentos.tsx
+├── types/              # TypeScript types
+│   ├── colaborador.ts
+│   └── departamento.ts
+├── App.tsx             # Componente principal
+└── main.tsx           # Entry point
 ```
 
 ## 🔧 Uso
 
+### Primeiro Acesso
+1. Clique em "Cadastre-se" na tela de login
+2. Preencha seus dados
+3. Confirme o cadastro
+4. Faça login com suas credenciais
+
 ### Cadastrar Colaborador
 1. Clique em "Novo Colaborador"
 2. Preencha os dados em 4 etapas
-3. Revise e salve
+3. Revise as informações
+4. Confirme o cadastro
 
-### Editar Colaborador
-1. Clique no ícone de edição (lápis azul)
-2. Modifique os dados necessários
-3. Clique em "Atualizar"
+### Criar Departamento
+1. Acesse "Departamentos" no menu lateral
+2. Clique em "Novo Departamento"
+3. Defina nome, gestor e colaboradores
+4. Salve o departamento
 
-### Excluir Colaborador
-1. Clique no ícone de lixeira (vermelho)
-2. Confirme no dialog
-3. Colaborador removido
+### Transferir Colaborador
+1. Edite um departamento
+2. Adicione colaboradores de outros departamentos
+3. Note o indicador de transferência
+4. Confirme para efetivar
 
-## 📊 Modelo de Dados
+## 🚀 Deploy
 
+### Vercel (Recomendado)
+
+1. **Via GitHub**
+```bash
+# Push para GitHub
+git push origin main
+
+# No Vercel
+- Import Git Repository
+- Configure Environment Variables
+- Deploy
+```
+
+2. **Via CLI**
+```bash
+npm i -g vercel
+vercel
+```
+
+### Build Local
+```bash
+npm run build
+npm run preview
+```
+
+## 💻 Scripts Disponíveis
+
+```bash
+npm run dev      # Desenvolvimento com hot-reload
+npm run build    # Build para produção
+npm run preview  # Preview do build
+```
+
+## 📝 Modelo de Dados
+
+### Colaborador
 ```typescript
 interface Colaborador {
   id?: string;
-  // Dados Pessoais
   nome: string;
   email: string;
   cpf: string;
   telefone: string;
   dataNascimento: string;
-  
-  // Informações Profissionais
   cargo: string;
   dataAdmissao: string;
   nivelHierarquico: 'junior' | 'pleno' | 'senior' | 'gestor';
   gestorResponsavel?: string;
   salarioBase: number;
-  
-  // Endereço
+  departamento: string;
+  departamentoId?: string;
+  status: 'ativo' | 'inativo' | 'ferias' | 'afastado';
   endereco: {
     cep: string;
     logradouro: string;
@@ -189,94 +312,63 @@ interface Colaborador {
     cidade: string;
     estado: string;
   };
-  
-  // Administrativo
-  departamento: string;
-  status: 'ativo' | 'inativo' | 'ferias' | 'afastado';
+  userId?: string;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }
 ```
 
-## 🚀 Deploy
-
-### Vercel (Recomendado)
-
-1. **Via CLI**:
-```bash
-npm i -g vercel
-vercel
-```
-
-2. **Via GitHub**:
-- Importe o projeto no Vercel
-- Configure as variáveis de ambiente
-- Deploy automático!
-
-### Build Local
-```bash
-npm run build
-npm run preview
-```
-
-## 🔒 Segurança
-
-### Regras Firestore para Produção
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /colaboradores/{document=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null 
-        && request.auth.token.admin == true;
-    }
-  }
+### Departamento
+```typescript
+interface Departamento {
+  id?: string;
+  nome: string;
+  gestorResponsavelId: string;
+  colaboradoresIds: string[];
+  descricao?: string;
+  orcamento?: number;
+  userId?: string;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }
 ```
-
-## 💻 Scripts
-
-```bash
-npm run dev      # Desenvolvimento
-npm run build    # Build produção
-npm run preview  # Preview build
-npm run lint     # Linter
-```
-
-## 🧪 Testes
-
-### Funcionalidades para testar:
-1. ✅ Cadastro completo com todos os campos
-2. ✅ Validações em cada etapa
-3. ✅ Autocomplete de gestor
-4. ✅ Edição mantém dados
-5. ✅ Exclusão com confirmação
-6. ✅ Lista atualiza automaticamente
 
 ## 🐛 Troubleshooting
 
 ### Firebase não conecta
-- Verifique o arquivo `.env`
-- Confirme que variáveis começam com `VITE_`
-- Verifique se Firestore está ativo
+- Verifique as variáveis no `.env`
+- Confirme que começam com `VITE_`
+- Verifique se Authentication está ativo
+
+### Erro ao criar usuário
+- Verifique se Email/Password está habilitado
+- Senha deve ter mínimo 6 caracteres
+- Email deve ser válido
 
 ### Dados não aparecem
-- Verifique console (F12)
-- Nome da coleção: `colaboradores`
-- Verifique regras do Firestore
+- Verifique as regras do Firestore
+- Confirme o `userId` nos documentos
+- Verifique console do navegador (F12)
 
 ## 🤝 Contribuição
 
 1. Fork o projeto
-2. Crie sua branch (`git checkout -b feature/NovaFuncionalidade`)
-3. Commit (`git commit -m 'feat: adiciona nova funcionalidade'`)
-4. Push (`git push origin feature/NovaFuncionalidade`)
+2. Crie sua branch (`git checkout -b feature/MinhaFeature`)
+3. Commit suas mudanças (`git commit -m 'Add: nova feature'`)
+4. Push para a branch (`git push origin feature/MinhaFeature`)
 5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ## 👥 Autor
 
-**Tiago Rahal**
+**Tiago Rahal Aires**
 - GitHub: [@tiagorahal](https://github.com/tiagorahal)
 - LinkedIn: [tiagorahal](https://www.linkedin.com/in/tiagorahal/)
 - Email: rahal.aires@gmail.com
 
 ---
+
+⭐ Se este projeto te ajudou, considere dar uma estrela no GitHub!

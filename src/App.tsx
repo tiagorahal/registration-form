@@ -28,6 +28,7 @@ import { ListaColaboradores } from './components/colaboradores/ListaColaboradore
 import { StepperCadastro } from './components/colaboradores/StepperCadastro';
 import { useColaboradores } from './hooks/useColaboradores';
 import { Colaborador } from './types/colaborador';
+import { Departamentos } from './pages/Departamentos';
 
 // Theme configuration
 const theme = createTheme({
@@ -349,6 +350,15 @@ function App() {
               element={
                 <PrivateRoute>
                   <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            {/* ADIÇÃO: rota privada de Departamentos */}
+            <Route
+              path="/departamentos"
+              element={
+                <PrivateRoute>
+                  <Departamentos />
                 </PrivateRoute>
               }
             />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -17,6 +17,8 @@ import {
 import { Check as CheckIcon } from '@mui/icons-material';
 import { Colaborador } from '../../types/colaborador';
 import { useColaboradores } from '../../hooks/useColaboradores';
+// ✅ ADIÇÃO
+import { useDepartamentos } from '../../hooks/useDepartamentos';
 
 const steps = ['Dados Pessoais', 'Informações Profissionais', 'Endereço', 'Revisão'];
 
@@ -70,6 +72,31 @@ export const StepperCadastro: React.FC<StepperCadastroProps> = ({
       });
     }
   }, [colaboradorEdit]);
+
+  // ✅ ADIÇÃO: buscar departamentos do Firestore e mesclar com os padrões
+  const { departamentos: departamentosFS, loading: loadingDepartamentos } = useDepartamentos();
+
+  // padrões que já existem no seu <Select>
+  const departamentosPadrao = useMemo(
+    () => ['Design','TI','Marketing','Produto','Vendas','RH','Financeiro','Operações'],
+    []
+  );
+
+  // nomes vindos do Firestore (únicos e válidos)
+  const nomesFS = useMemo(
+    () => Array.from(new Set(departamentosFS.map(d => d.nome).filter(Boolean))),
+    [departamentosFS]
+  );
+
+  // só os que não estão nos padrões (para não duplicar na UI)
+  const extrasFS = useMemo(
+    () => nomesFS.filter(n => !departamentosPadrao.includes(n)),
+    [nomesFS, departamentosPadrao]
+  );
+
+  // suporte a edição quando o valor salvo não está na lista
+  const selectedDepartamento = (formData.departamento ?? '').toString();
+  const selectedNotInList = !!selectedDepartamento && ![...departamentosPadrao, ...nomesFS].includes(selectedDepartamento);
 
   const [errors, setErrors] = useState<any>({});
 
@@ -339,6 +366,7 @@ export const StepperCadastro: React.FC<StepperCadastroProps> = ({
                     label="Departamento"
                   >
                     <MenuItem value="">Selecione</MenuItem>
+                    {/* MANTIDOS: seus itens padrão */}
                     <MenuItem value="Design">Design</MenuItem>
                     <MenuItem value="TI">TI</MenuItem>
                     <MenuItem value="Marketing">Marketing</MenuItem>
@@ -347,9 +375,25 @@ export const StepperCadastro: React.FC<StepperCadastroProps> = ({
                     <MenuItem value="RH">RH</MenuItem>
                     <MenuItem value="Financeiro">Financeiro</MenuItem>
                     <MenuItem value="Operações">Operações</MenuItem>
+
+                    {/* ✅ ADIÇÃO: se o valor atual não estiver na lista, mostra-lo para edição */}
+                    {selectedNotInList && (
+                      <MenuItem value={selectedDepartamento}>{selectedDepartamento}</MenuItem>
+                    )}
+
+                    {/* ✅ ADIÇÃO: itens vindos do Firestore (sem duplicar os padrões) */}
+                    {extrasFS.map((nome) => (
+                      <MenuItem key={`fs-${nome}`} value={nome}>
+                        {nome}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {errors.departamento && (
                     <FormHelperText>{errors.departamento}</FormHelperText>
+                  )}
+                  {/* ✅ ADIÇÃO: feedback de carregamento */}
+                  {loadingDepartamentos && !errors.departamento && (
+                    <FormHelperText>Carregando departamentos…</FormHelperText>
                   )}
                 </FormControl>
               </Grid>
