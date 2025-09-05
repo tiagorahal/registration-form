@@ -11,7 +11,6 @@ import {
   Divider
 } from '@mui/material';
 import {
-  Dashboard,
   People,
   Business,
   Settings,
@@ -28,7 +27,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ drawerWidth }) => {
   const location = useLocation();
 
   const menuItems = [
-    { text: 'Dashboard', icon: <Dashboard />, path: '/' },
     { text: 'Colaboradores', icon: <People />, path: '/' },
     { text: 'Departamentos', icon: <Business />, path: '/departamentos' },
     { text: 'Relatórios', icon: <Assessment />, path: '/relatorios' },
