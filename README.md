@@ -37,6 +37,18 @@ Sistema profissional de gestão de recursos humanos com funcionalidades avançad
 - ✅ **Isolamento de dados por usuário**
 - ✅ **Context API para estado global**
 
+### Gestão de Conta do Usuário
+- ✅ **Página de perfil completa** com informações detalhadas
+- ✅ **Edição de dados pessoais** (nome de exibição)
+- ✅ **Avatar personalizado** com cores baseadas no email
+- ✅ **Informações da conta** (ID, verificação, datas)
+- ✅ **Página de configurações** com preferências do sistema
+- ✅ **Configurações de notificações** (email, push, atualizações)
+- ✅ **Configurações de privacidade** (perfil público, coleta de dados)
+- ✅ **Configurações de aparência** (modo escuro, animações)
+- ✅ **Ações rápidas** (alterar senha, privacidade, histórico)
+- ✅ **Navegação pelo TopBar** e Sidebar com menu dropdown
+
 ### Gestão de Colaboradores
 - ✅ **Cadastro em 4 etapas** com validação progressiva
   - Dados Pessoais (nome, email, CPF, telefone, nascimento)
@@ -80,13 +92,14 @@ Sistema profissional de gestão de recursos humanos com funcionalidades avançad
 ### Interface & UX
 - ✅ **Design moderno e responsivo** com Material-UI
 - ✅ **Página 404 customizada** com gradientes
-- ✅ **Sidebar navegável** com indicador de página ativa
-- ✅ **TopBar** com informações do usuário
+- ✅ **Sidebar navegável** com indicador de página ativa e seção de conta
+- ✅ **TopBar** com menu dropdown de usuário funcional
 - ✅ **Feedback visual** com snackbars
 - ✅ **Loading states** durante operações
 - ✅ **Validações em tempo real**
 - ✅ **Dialogs de confirmação** para ações críticas
 - ✅ **Tema consistente** com cores e espaçamentos
+- ✅ **Navegação intuitiva** entre páginas
 
 ## 🛠 Tecnologias
 
@@ -215,6 +228,8 @@ src/
 │   ├── Register.tsx
 │   ├── ForgotPassword.tsx
 │   ├── NotFound.tsx
+│   ├── UserProfile.tsx # Página de perfil do usuário
+│   ├── Settings.tsx    # Página de configurações
 │   └── Departamentos.tsx
 ├── types/              # TypeScript types
 │   ├── colaborador.ts
@@ -230,6 +245,18 @@ src/
 2. Preencha seus dados
 3. Confirme o cadastro
 4. Faça login com suas credenciais
+
+### Gerenciar Perfil do Usuário
+1. **Via TopBar**: Clique no avatar → "Meu Perfil"
+2. **Via Sidebar**: Seção "CONTA" → "Meu Perfil"
+3. Edite seu nome de exibição clicando em "Editar"
+4. Visualize informações da conta (verificação, datas, ID)
+
+### Configurações do Sistema
+1. **Via TopBar**: Clique no avatar → "Configurações"
+2. **Via Sidebar**: Seção "CONTA" → "Configurações"
+3. Configure notificações, privacidade e aparência
+4. Salve as configurações ou restaure os padrões
 
 ### Cadastrar Colaborador
 1. Clique em "Novo Colaborador"
@@ -333,6 +360,20 @@ interface Departamento {
 }
 ```
 
+## 🗺️ Rotas da Aplicação
+
+### Rotas Públicas
+- `/login` - Página de login
+- `/register` - Cadastro de novos usuários
+- `/forgot-password` - Recuperação de senha
+
+### Rotas Privadas (Requer autenticação)
+- `/` - Dashboard principal (lista de colaboradores)
+- `/departamentos` - Gestão de departamentos
+- `/perfil` - Página de perfil do usuário
+- `/configuracoes` - Configurações do sistema
+- `/404` - Página não encontrada
+
 ## 🐛 Troubleshooting
 
 ### Firebase não conecta
@@ -349,6 +390,11 @@ interface Departamento {
 - Verifique as regras do Firestore
 - Confirme o `userId` nos documentos
 - Verifique console do navegador (F12)
+
+### Perfil não atualiza
+- Confirme que `updateUserProfile` está funcionando
+- Verifique se o Firebase Auth permite alterações
+- Recarregue a página após alterações
 
 ## 🤝 Contribuição
 
