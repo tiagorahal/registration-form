@@ -4,22 +4,47 @@ import {
   Toolbar,
   Typography,
   IconButton,
-  Box,
   Avatar,
   Menu,
   MenuItem,
-  Divider,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Box,
+  Divider
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Logout,
   Person,
-  Settings
+  Settings,
+  Logout
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+
+// Função para gerar cor do avatar baseada no email
+const getAvatarColor = (email: string | null | undefined = '') => {
+  const colors = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+    '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
+  ];
+  const emailStr = email || '';
+  const hash = emailStr.split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0);
+    return a & a;
+  }, 0);
+  return colors[Math.abs(hash) % colors.length];
+};
+
+// Função para obter iniciais do nome
+const getInitials = (name: string | null | undefined = '') => {
+  const nameStr = name || '';
+  return nameStr
+    .split(' ')
+    .map(word => word.charAt(0))
+    .join('')
+    .toUpperCase()
+    .slice(0, 2) || '?';
+};
 
 export const TopBar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -34,36 +59,24 @@ export const TopBar: React.FC = () => {
     setAnchorEl(null);
   };
 
+  const handleProfileClick = () => {
+    handleClose();
+    navigate('/perfil');
+  };
+
+  const handleSettingsClick = () => {
+    handleClose();
+    navigate('/configuracoes');
+  };
+
   const handleLogout = async () => {
+    handleClose();
     try {
       await logout();
       navigate('/login');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
     }
-    handleClose();
-  };
-
-  // Pegar as iniciais do nome do usuário
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'U';
-    const parts = name.split(' ');
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-    }
-    return name[0].toUpperCase();
-  };
-
-  // Gerar cor baseada no email
-  const getAvatarColor = (email: string | null | undefined) => {
-    if (!email) return '#667eea';
-    const colors = [
-      '#667eea', '#764ba2', '#f093fb', '#f5576c',
-      '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
-      '#fa709a', '#fee140', '#30cfd0', '#a8edea'
-    ];
-    const index = email.charCodeAt(0) % colors.length;
-    return colors[index];
   };
 
   return (
@@ -167,14 +180,14 @@ export const TopBar: React.FC = () => {
             
             <Divider sx={{ my: 0.5 }} />
             
-            <MenuItem onClick={handleClose}>
+            <MenuItem onClick={handleProfileClick}>
               <ListItemIcon>
                 <Person fontSize="small" />
               </ListItemIcon>
               <ListItemText>Meu Perfil</ListItemText>
             </MenuItem>
             
-            <MenuItem onClick={handleClose}>
+            <MenuItem onClick={handleSettingsClick}>
               <ListItemIcon>
                 <Settings fontSize="small" />
               </ListItemIcon>
